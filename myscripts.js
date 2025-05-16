@@ -173,3 +173,48 @@ function declineFriendRequest(fromUsername) {
 function removeFriend(friendUsername) {
   // Removes an existing friend
 }
+function searchFriends(e) {
+    e.preventDefault();
+    const searchTerm = document.getElementById('friend-search').value.trim().toLowerCase();
+    
+    if (!searchTerm) {
+        document.getElementById('search-results').innerHTML = '';
+        document.getElementById('no-search-results').classList.remove('hidden');
+        return;
+    }
+    
+    const users = JSON.parse(localStorage.getItem('users') || {};
+    const user = users[currentUser] || {};
+    
+    let resultsHTML = '';
+    let hasResults = false;
+    
+    Object.keys(users).forEach(username => {
+        // Skip if: current user, already friends, or already requested
+        if (username.toLowerCase() === currentUser.toLowerCase()) return;
+        if (user.friends && user.friends.includes(username)) return;
+        if (user.sentRequests && user.sentRequests.some(req => req.to === username)) return;
+        
+        // Show if username matches search
+        if (username.toLowerCase().includes(searchTerm)) {
+            hasResults = true;
+            const isAlreadyRequested = user.sentRequests && 
+                                     user.sentRequests.some(req => req.to === username);
+            
+            resultsHTML += `
+                <div class="friend-item">
+                    <span>${username}</span>
+                    <div class="friend-actions">
+                        ${isAlreadyRequested ? 
+                            '<span>Request Sent</span>' : 
+                            `<button class="primary" onclick="sendFriendRequest('${username}')">Add Friend</button>`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    document.getElementById('search-results').innerHTML = resultsHTML;
+    document.getElementById('no-search-results').classList.toggle('hidden', hasResults);
+}
