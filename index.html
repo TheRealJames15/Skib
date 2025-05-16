@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapLite - Fixed Login/Register</title>
+    <style>
+        /* Your existing CSS styles here */
+        :root {
+            --snap-yellow: #fffc00;
+            --snap-black: #000000;
+            --snap-white: #ffffff;
+            --snap-gray: #f5f5f5;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--snap-gray);
+        }
+        
+        nav {
+            background-color: var(--snap-yellow);
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--snap-black);
+            font-weight: bold;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .auth-form, .post-creator, .posts {
+            background-color: white;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        input, button {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: var(--snap-yellow);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .error {
+            color: red;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" id="home-link">Home</a>
+        <a href="#" id="login-link" class="hidden">Login</a>
+        <a href="#" id="register-link" class="hidden">Register</a>
+        <a href="#" id="dashboard-link" class="hidden">Dashboard</a>
+        <a href="#" id="logout-link" class="hidden">Logout</a>
+    </nav>
+
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="home-screen">
+            <h1>Welcome to SnapLite</h1>
+            <p>A simple Snapchat-like application</p>
+            <div id="home-buttons" style="margin-top: 20px;">
+                <button id="go-to-login" style="margin-right: 10px;">Login</button>
+                <button id="go-to-register">Register</button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form" class="auth-form hidden">
+            <h2>Login</h2>
+            <form id="login-form-element">
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <div id="login-error" class="error hidden"></div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-form" class="auth-form hidden">
+            <h2>Register</h2>
+            <form id="register-form-element">
+                <input type="text" id="register-username" placeholder="Username" required>
+                <input type="password" id="register-password" placeholder="Password" required>
+                <div id="register-error" class="error hidden"></div>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden">
+            <h2 id="welcome-message">Welcome back!</h2>
+            <p>You are now logged in.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize localStorage if empty
+        if (!localStorage.getItem('users')) {
+            localStorage.setItem('users', JSON.stringify({}));
+        }
+
+        // DOM Elements
+        const homeScreen = document.getElementById('home-screen');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const dashboard = document.getElementById('dashboard');
+
+        // Navigation Links
+        const homeLink = document.getElementById('home-link');
+        const loginLink = document.getElementById('login-link');
+        const registerLink = document.getElementById('register-link');
+        const dashboardLink = document.getElementById('dashboard-link');
+        const logoutLink = document.getElementById('logout-link');
+
+        // Home buttons
+        const goToLogin = document.getElementById('go-to-login');
+        const goToRegister = document.getElementById('go-to-register');
+
+        // Current user
+        let currentUser = localStorage.getItem('currentUser');
+
+        // Initialize the app
+        function init() {
+            setupEventListeners();
+            checkAuthState();
+        }
+
+        // Check authentication state
+        function checkAuthState() {
+            if (currentUser) {
+                showDashboard();
+            } else {
+                showHome();
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Navigation
+            homeLink.addEventListener('click', showHome);
+            loginLink.addEventListener('click', showLogin);
+            registerLink.addEventListener('click', showRegister);
+            dashboardLink.addEventListener('click', showDashboard);
+            logoutLink.addEventListener('click', logout);
+
+            // Home buttons
+            goToLogin.addEventListener('click', showLogin);
+            goToRegister.addEventListener('click', showRegister);
+
+            // Forms
+            document.getElementById('login-form-element').addEventListener('submit', handleLogin);
+            document.getElementById('register-form-element').addEventListener('submit', handleRegister);
+        }
+
+        // Show screens
+        function showHome() {
+            hideAllScreens();
+            homeScreen.classList.remove('hidden');
+            updateNav();
+        }
+
+        function showLogin() {
+            hideAllScreens();
+            loginForm.classList.remove('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+            updateNav();
+        }
+
+        function showRegister() {
+            hideAllScreens();
+            registerForm.classList.remove('hidden');
+            document.getElementById('register-error').classList.add('hidden');
+            updateNav();
+        }
+
+        function showDashboard() {
+            if (!currentUser) {
+                showHome();
+                return;
+            }
+            
+            hideAllScreens();
+            dashboard.classList.remove('hidden');
+            document.getElementById('welcome-message').textContent = `Welcome, ${currentUser}!`;
+            updateNav();
+        }
+
+        function hideAllScreens() {
+            homeScreen.classList.add('hidden');
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            dashboard.classList.add('hidden');
+        }
+
+        // Update navigation based on auth state
+        function updateNav() {
+            if (currentUser) {
+                // User is logged in
+                loginLink.classList.add('hidden');
+                registerLink.classList.add('hidden');
+                dashboardLink.classList.remove('hidden');
+                logoutLink.classList.remove('hidden');
+            } else {
+                // User is not logged in
+                loginLink.classList.remove('hidden');
+                registerLink.classList.remove('hidden');
+                dashboardLink.classList.add('hidden');
+                logoutLink.classList.add('hidden');
+            }
+        }
+
+        // Login handler
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            const errorElement = document.getElementById('login-error');
+            
+            if (!users[username]) {
+                errorElement.textContent = 'Username not found';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            
+            if (users[username].password !== password) {
+                errorElement.textContent = 'Incorrect password';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            
+            // Successful login
+            currentUser = username;
+            localStorage.setItem('currentUser', username);
+            showDashboard();
+        }
+
+        // Register handler
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('register-username').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            const errorElement = document.getElementById('register-error');
+            
+            // Validate inputs
+            if (username.length < 3) {
+                errorElement.textContent = 'Username must be at least 3 characters';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorElement.textContent = 'Password must be at least 6 characters';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            // Check if username exists
+            if (users[username]) {
+                errorElement.textContent = 'Username already exists';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            
+            // Create new user
+            users[username] = {
+                password: password,
+                friends: [],
+                posts: []
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('users', JSON.stringify(users));
+            currentUser = username;
+            localStorage.setItem('currentUser', username);
+            
+            // Redirect to dashboard
+            showDashboard();
+        }
+
+        // Logout handler
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            showHome();
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
