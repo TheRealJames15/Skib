@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JamesChat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #fefefe;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 500px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .camera-container {
+            flex: 1;
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .camera-view {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .camera-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            z-index: 10;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .capture-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 4px solid white;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background-color: #fefefe;
+            border-top: 1px solid #ddd;
+        }
+        
+        .nav-btn {
+            font-size: 24px;
+            color: #555;
+            cursor: pointer;
+        }
+        
+        .nav-btn.active {
+            color: #0066cc;
+        }
+        
+        .stories-container, .chat-container, .discover-container {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .active-tab {
+            display: block;
+        }
+        
+        .story-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff5f6d, #ffc371);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        
+        .stories-row {
+            display: flex;
+            padding: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .chat-item {
+            display: flex;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #0066cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .chat-info {
+            flex: 1;
+        }
+        
+        .chat-name {
+            font-weight: bold;
+        }
+        
+        .chat-preview {
+            color: #777;
+            font-size: 14px;
+        }
+        
+        .discover-item {
+            margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .discover-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .discover-title {
+            padding: 10px;
+            font-weight: bold;
+        }
+        
+        .flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .flash.active {
+            animation: flash 0.3s;
+        }
+        
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .filter-container {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .filter-btn {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Camera View -->
+        <div class="camera-container" id="cameraTab">
+            <div class="flash" id="flash"></div>
+            <video class="camera-view" id="cameraView" autoplay playsinline></video>
+            <canvas id="photoCanvas" style="display:none;"></canvas>
+            
+            <div class="filter-container">
+                <button class="filter-btn" onclick="applyFilter('none')">Normal</button>
+                <button class="filter-btn" onclick="applyFilter('sepia(100%)')">Sepia</button>
+                <button class="filter-btn" onclick="applyFilter('grayscale(100%)')">B&W</button>
+                <button class="filter-btn" onclick="applyFilter('hue-rotate(90deg)')">Color</button>
+            </div>
+            
+            <div class="camera-controls">
+                <div class="control-btn" onclick="switchCamera()">
+                    <span>🔄</span>
+                </div>
+                <div class="control-btn capture-btn" onclick="takePhoto()">
+                    <span>📷</span>
+                </div>
+                <div class="control-btn" onclick="toggleVideo()">
+                    <span id="videoBtn">🎥</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stories View -->
+        <div class="stories-container" id="storiesTab">
+            <div class="stories-row">
+                <div class="story-circle" onclick="viewStory('Your Story')">+</div>
+                <div class="story-circle" onclick="viewStory('Alex')">A</div>
+                <div class="story-circle" onclick="viewStory('Jamie')">J</div>
+                <div class="story-circle" onclick="viewStory('Taylor')">T</div>
+                <div class="story-circle" onclick="viewStory('Morgan')">M</div>
+            </div>
+            
+            <div style="padding: 15px;">
+                <h3>Recent Updates</h3>
+                <div style="margin-top: 10px;">
+                    <div class="story-circle" style="width: 50px; height: 50px; display: inline-flex; margin-right: 10px;">A</div>
+                    <span>Alex posted a new story</span>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div class="story-circle" style="width: 50px; height: 50px; display: inline-flex; margin-right: 10px;">J</div>
+                    <span>Jamie posted a new story</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat View -->
+        <div class="chat-container" id="chatTab">
+            <div class="chat-item" onclick="openChat('Alex')">
+                <div class="chat-avatar">A</div>
+                <div class="chat-info">
+                    <div class="chat-name">Alex</div>
+                    <div class="chat-preview">Hey, what's up?</div>
+                </div>
+                <div>⏱️</div>
+            </div>
+            
+            <div class="chat-item" onclick="openChat('Jamie')">
+                <div class="chat-avatar">J</div>
+                <div class="chat-info">
+                    <div class="chat-name">Jamie</div>
+                    <div class="chat-preview">Check out this snap!</div>
+                </div>
+                <div>⏱️</div>
+            </div>
+            
+            <div class="chat-item" onclick="openChat('Taylor')">
+                <div class="chat-avatar">T</div>
+                <div class="chat-info">
+                    <div class="chat-name">Taylor</div>
+                    <div class="chat-preview">See you tomorrow!</div>
+                </div>
+                <div>⏱️</div>
+            </div>
+        </div>
+        
+        <!-- Discover View -->
+        <div class="discover-container" id="discoverTab">
+            <div class="discover-item">
+                <img src="https://via.placeholder.com/300x150/0066cc/ffffff?text=News" class="discover-image">
+                <div class="discover-title">Daily News Update</div>
+            </div>
+            
+            <div class="discover-item">
+                <img src="https://via.placeholder.com/300x150/ff5f6d/ffffff?text=Entertainment" class="discover-image">
+                <div class="discover-title">Celebrity Gossip</div>
+            </div>
+            
+            <div class="discover-item">
+                <img src="https://via.placeholder.com/300x150/ffc371/ffffff?text=Sports" class="discover-image">
+                <div class="discover-title">Sports Highlights</div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="navbar">
+            <div class="nav-btn active" onclick="switchTab('camera')">📷</div>
+            <div class="nav-btn" onclick="switchTab('stories')">📖</div>
+            <div class="nav-btn" onclick="switchTab('chat')">💬</div>
+            <div class="nav-btn" onclick="switchTab('discover')">🔍</div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            document.getElementById('cameraTab').style.display = 'none';
+            document.getElementById('storiesTab').style.display = 'none';
+            document.getElementById('chatTab').style.display = 'none';
+            document.getElementById('discoverTab').style.display = 'none';
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (tab === 'camera') {
+                document.getElementById('cameraTab').style.display = 'block';
+                document.querySelectorAll('.nav-btn')[0].classList.add('active');
+                startCamera();
+            } else if (tab === 'stories') {
+                document.getElementById('storiesTab').style.display = 'block';
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            } else if (tab === 'chat') {
+                document.getElementById('chatTab').style.display = 'block';
+                document.querySelectorAll('.nav-btn')[2].classList.add('active');
+            } else if (tab === 'discover') {
+                document.getElementById('discoverTab').style.display = 'block';
+                document.querySelectorAll('.nav-btn')[3].classList.add('active');
+            }
+        }
+        
+        // Camera functionality
+        let stream = null;
+        let isFrontCamera = true;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: isFrontCamera ? 'user' : 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('cameraView');
+                videoElement.srcObject = stream;
+            } catch (err) {
+                console.error("Camera error: ", err);
+                alert("Could not access the camera. Please check permissions.");
+            }
+        }
+        
+        function switchCamera() {
+            isFrontCamera = !isFrontCamera;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            startCamera();
+        }
+        
+        function takePhoto() {
+            const video = document.getElementById('cameraView');
+            const canvas = document.getElementById('photoCanvas');
+            const flash = document.getElementById('flash');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Show flash effect
+            flash.classList.add('active');
+            setTimeout(() => {
+                flash.classList.remove('active');
+            }, 300);
+            
+            // In a real app, you would save or send this photo
+            const imageData = canvas.toDataURL('image/png');
+            alert('Photo captured! This would be sent in the real app.');
+        }
+        
+        function toggleVideo() {
+            const videoBtn = document.getElementById('videoBtn');
+            
+            if (isRecording) {
+                // Stop recording
+                mediaRecorder.stop();
+                videoBtn.textContent = '🎥';
+                isRecording = false;
+            } else {
+                // Start recording
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    alert('Video recorded! This would be sent in the real app.');
+                };
+                
+                mediaRecorder.start();
+                videoBtn.textContent = '⏹️';
+                isRecording = true;
+            }
+        }
+        
+        function applyFilter(filter) {
+            document.getElementById('cameraView').style.filter = filter;
+        }
+        
+        // Stories functionality
+        function viewStory(name) {
+            alert(`Viewing ${name}'s story`);
+        }
+        
+        // Chat functionality
+        function openChat(name) {
+            alert(`Opening chat with ${name}`);
+        }
+        
+        // Initialize camera on load
+        window.onload = () => {
+            startCamera();
+        };
+    </script>
+</body>
+</html>
