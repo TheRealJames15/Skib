@@ -353,3 +353,86 @@ function searchFriends(e) {
     document.getElementById('search-results').innerHTML = resultsHTML;
     document.getElementById('no-search-results').classList.toggle('hidden', hasResults);
 }
+// Add this function to display received snaps
+function loadReceivedSnaps() {
+    const users = JSON.parse(localStorage.getItem('users'));
+    const user = users[currentUser];
+    const receivedSnapsContainer = document.getElementById('received-snaps');
+    const noSnapsMessage = document.getElementById('no-snaps');
+    
+    if (!user.receivedSnaps || user.receivedSnaps.length === 0) {
+        noSnapsMessage.classList.remove('hidden');
+        receivedSnapsContainer.innerHTML = '';
+        return;
+    }
+    
+    noSnapsMessage.classList.add('hidden');
+    
+    let snapsHTML = '';
+    user.receivedSnaps.forEach((snap, index) => {
+        if (new Date(snap.expiresAt) < new Date()) {
+            // Skip expired snaps
+            return;
+        }
+        
+        snapsHTML += `
+            <div class="snap-item" data-snap-id="${snap.id}">
+                <div class="snap-header">
+                    <span>From: ${snap.from}</span>
+                    <span>${formatDate(snap.sentAt)}</span>
+                </div>
+                <div class="snap-content ${snap.viewed ? '' : 'unviewed'}">
+                    <img src="${snap.imageData}" alt="${snap.caption}" class="snap-image">
+                    <p>${snap.caption}</p>
+                    <div class="snap-status">
+                        ${snap.viewed ? 
+                            'Viewed' : 
+                            '<button class="view-snap-btn">View Snap</button>'}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    receivedSnapsContainer.innerHTML = snapsHTML;
+    
+    // Add event listeners to view buttons
+    document.querySelectorAll('.view-snap-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const snapId = this.closest('.snap-item').dataset.snapId;
+            viewSnap(snapId);
+        });
+    });
+}
+
+function viewSnap(snapId) {
+    const users = JSON.parse(localStorage.getItem('users'));
+    const snap = users[currentUser].receivedSnaps.find(s => s.id === snapId);
+    
+    if (snap) {
+        // Mark as viewed
+        snap.viewed = true;
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Show the snap
+        alert(`Showing snap from ${snap.from}: ${snap.caption}`);
+        
+        // Reload snaps to update UI
+        loadReceivedSnaps();
+    }
+}
+
+// Update showDashboard to load snaps
+function showDashboard() {
+    if (!currentUser) {
+        showHome();
+        return;
+    }
+
+    hideAllScreens();
+    dashboard.classList.remove('hidden');
+    document.getElementById('welcome-message').textContent = `Welcome, ${currentUser}!`;
+    loadFriendsForSending();
+    loadReceivedSnaps();
+    updateNav();
+}
