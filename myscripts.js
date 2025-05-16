@@ -1,3 +1,138 @@
+// Add these variables at the top with your other DOM elements
+const sendSnapForm = document.getElementById('send-snap-form');
+const sendToFriendSelect = document.getElementById('send-to-friend');
+const snapCaptionInput = document.getElementById('snap-caption');
+const sendSnapBtn = document.getElementById('send-snap-btn');
+
+// Add to your setupEventListeners()
+sendSnapForm.addEventListener('submit', sendSnapToFriend);
+captureBtn.addEventListener('click', capturePhotoForSending);
+retakeBtn.addEventListener('click', retakePhotoForSending);
+snapCaptionInput.addEventListener('input', updateSendSnapButtonState);
+
+// Add these new functions
+function loadFriendsForSending() {
+    const users = JSON.parse(localStorage.getItem('users'));
+    const user = users[currentUser];
+    
+    sendToFriendSelect.innerHTML = '<option value="">Select a friend</option>';
+    
+    if (user && user.friends && user.friends.length > 0) {
+        user.friends.forEach(friend => {
+            const option = document.createElement('option');
+            option.value = friend;
+            option.textContent = friend;
+            sendToFriendSelect.appendChild(option);
+        });
+    }
+}
+
+function capturePhotoForSending() {
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    currentImageData = canvas.toDataURL('image/jpeg', 0.8);
+    capturedImage.src = currentImageData;
+    
+    video.classList.add('hidden');
+    capturedImage.classList.remove('hidden');
+    captureBtn.classList.add('hidden');
+    retakeBtn.classList.remove('hidden');
+    sendSnapBtn.classList.remove('hidden');
+    
+    stopCamera();
+}
+
+function retakePhotoForSending() {
+    video.classList.remove('hidden');
+    capturedImage.classList.add('hidden');
+    captureBtn.classList.remove('hidden');
+    retakeBtn.classList.add('hidden');
+    sendSnapBtn.classList.add('hidden');
+    currentImageData = null;
+    
+    setupCamera();
+}
+
+function updateSendSnapButtonState() {
+    sendSnapBtn.disabled = !(currentImageData && sendToFriendSelect.value && snapCaptionInput.value.trim());
+}
+
+function sendSnapToFriend(e) {
+    e.preventDefault();
+    
+    const friendUsername = sendToFriendSelect.value;
+    const caption = snapCaptionInput.value.trim();
+    
+    if (!friendUsername || !currentImageData) {
+        document.getElementById('send-snap-error').textContent = 'Please select a friend and capture a photo';
+        document.getElementById('send-snap-error').classList.remove('hidden');
+        return;
+    }
+    
+    const users = JSON.parse(localStorage.getItem('users'));
+    const snapId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+    
+    // Add snap to recipient's received snaps
+    if (!users[friendUsername].receivedSnaps) {
+        users[friendUsername].receivedSnaps = [];
+    }
+    
+    users[friendUsername].receivedSnaps.unshift({
+        id: snapId,
+        from: currentUser,
+        imageData: currentImageData,
+        caption: caption,
+        sentAt: new Date().toISOString(),
+        expiresAt: expiresAt.toISOString(),
+        viewed: false
+    });
+    
+    // Add notification
+    if (!users[friendUsername].notifications) {
+        users[friendUsername].notifications = [];
+    }
+    
+    users[friendUsername].notifications.push({
+        type: 'snap',
+        from: currentUser,
+        timestamp: new Date().toISOString(),
+        read: false
+    });
+    
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    // Reset form
+    retakePhotoForSending();
+    snapCaptionInput.value = '';
+    sendToFriendSelect.value = '';
+    
+    // Show success message
+    document.getElementById('send-snap-success').textContent = `Snap sent to ${friendUsername}!`;
+    document.getElementById('send-snap-success').classList.remove('hidden');
+    document.getElementById('send-snap-error').classList.add('hidden');
+    
+    setTimeout(() => {
+        document.getElementById('send-snap-success').classList.add('hidden');
+    }, 3000);
+}
+
+// Update your showDashboard function to load friends
+function showDashboard() {
+    if (!currentUser) {
+        showHome();
+        return;
+    }
+
+    hideAllScreens();
+    dashboard.classList.remove('hidden');
+    document.getElementById('welcome-message').textContent = `Welcome, ${currentUser}!`;
+    loadFriendsForSending();
+    updateNav();
+}
 function sendMessage() {
     const messageText = chatInput.value.trim();
     
