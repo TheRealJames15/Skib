@@ -154,3 +154,22 @@ function loadChat(friendUsername) {
     // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+function searchFriends() {
+  // Handles searching for users to add
+}
+
+function sendFriendRequest(toUsername) {
+  // Sends a friend request to another user
+}
+
+function acceptFriendRequest(fromUsername) {
+  // Accepts an incoming friend request
+}
+
+function declineFriendRequest(fromUsername) {
+  // Declines an incoming friend request
+}
+
+function removeFriend(friendUsername) {
+  // Removes an existing friend
+}
