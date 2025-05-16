@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JamesChat</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-container">
+                <img src="assets/logo.svg" alt="JamesChat" class="logo">
+                <span class="app-name">JamesChat</span>
+            </div>
+            <button class="profile-btn">JS</button>
+        </header>
+
+        <main class="app-content">
+            <!-- Camera View -->
+            <div class="view active" id="camera-view">
+                <div class="flash-effect" id="flash"></div>
+                <video class="camera-feed" id="camera-feed" autoplay playsinline></video>
+                <canvas id="photo-canvas" style="display:none;"></canvas>
+                
+                <div class="filter-selector">
+                    <button class="filter-btn" data-filter="none">Normal</button>
+                    <button class="filter-btn" data-filter="sepia(100%)">Vintage</button>
+                    <button class="filter-btn" data-filter="grayscale(100%)">B&W</button>
+                    <button class="filter-btn" data-filter="hue-rotate(90deg)">Psychedelic</button>
+                </div>
+                
+                <div class="camera-controls">
+                    <button class="control-btn" id="switch-camera">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 3L5 7M5 7L9 11M5 7H19M15 21L19 17M19 17L15 13M19 17H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="capture-btn" id="capture-btn"></button>
+                    <button class="control-btn" id="video-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="2" y="6" width="20" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M10 12C10 10.8954 10.8954 10 12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stories View -->
+            <div class="view" id="stories-view">
+                <div class="stories-container">
+                    <div class="create-story">
+                        <div class="story-avatar">
+                            <span>+</span>
+                        </div>
+                        <p>Your Story</p>
+                    </div>
+                    
+                    <div class="stories-list">
+                        <div class="story-item">
+                            <div class="story-avatar" style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">A</div>
+                            <p>Alex</p>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);">J</div>
+                            <p>Jamie</p>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">T</div>
+                            <p>Taylor</p>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">M</div>
+                            <p>Morgan</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat View -->
+            <div class="view" id="chat-view">
+                <div class="chats-list">
+                    <div class="chat-item">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">A</div>
+                        <div class="chat-info">
+                            <div class="chat-header">
+                                <h3>Alex</h3>
+                                <span class="time">2m</span>
+                            </div>
+                            <p class="message-preview">Hey, check this out!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-item">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);">J</div>
+                        <div class="chat-info">
+                            <div class="chat-header">
+                                <h3>Jamie</h3>
+                                <span class="time">15m</span>
+                            </div>
+                            <p class="message-preview">See you tomorrow!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-item">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">T</div>
+                        <div class="chat-info">
+                            <div class="chat-header">
+                                <h3>Taylor</h3>
+                                <span class="time">1h</span>
+                            </div>
+                            <p class="message-preview">What's up?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discover View -->
+            <div class="view" id="discover-view">
+                <div class="discover-grid">
+                    <div class="discover-card">
+                        <div class="card-image" style="background-image: url('https://source.unsplash.com/random/300x200/?news')"></div>
+                        <h3>Daily News</h3>
+                        <p>Latest updates from around the world</p>
+                    </div>
+                    
+                    <div class="discover-card">
+                        <div class="card-image" style="background-image: url('https://source.unsplash.com/random/300x200/?entertainment')"></div>
+                        <h3>Entertainment</h3>
+                        <p>Celebrity news and gossip</p>
+                    </div>
+                    
+                    <div class="discover-card">
+                        <div class="card-image" style="background-image: url('https://source.unsplash.com/random/300x200/?sports')"></div>
+                        <h3>Sports</h3>
+                        <p>Highlights and scores</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="app-nav">
+            <button class="nav-btn active" data-view="camera">
+                <img src="assets/camera-icon.svg" alt="Camera">
+            </button>
+            <button class="nav-btn" data-view="stories">
+                <img src="assets/stories-icon.svg" alt="Stories">
+            </button>
+            <button class="nav-btn" data-view="chat">
+                <img src="assets/chat-icon.svg" alt="Chat">
+            </button>
+            <button class="nav-btn" data-view="discover">
+                <img src="assets/discover-icon.svg" alt="Discover">
+            </button>
+        </nav>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
