@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SnapLite+</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnapLite+ with Friends & Chat</title>
     <style>
         :root {
             --snap-yellow: #fffc00;
@@ -258,6 +252,52 @@
             border-radius: 0;
         }
         
+        /* Snaps system styles */
+        .camera-container {
+            position: relative;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #000;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #video, #captured-image {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .snap-item {
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .snap-header {
+            padding: 10px;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .snap-content {
+            padding: 15px;
+        }
+        
+        .snap-image {
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
         /* Tabs */
         .tabs {
             display: flex;
@@ -305,7 +345,7 @@
                 padding: 15px;
             }
             
-            .chat-container {
+            .chat-container, .camera-container {
                 height: 300px;
             }
         }
@@ -318,7 +358,10 @@
             <a href="#" id="home-link">Home</a>
             <a href="#" id="login-link" class="hidden">Login</a>
             <a href="#" id="register-link" class="hidden">Register</a>
-            <a href="#" id="dashboard-link" class="hidden">My Snaps</a>
+            <a href="#" id="snaps-link" class="hidden">
+                Snaps
+                <span id="snaps-notification-badge" class="notification-badge hidden"></span>
+            </a>
             <a href="#" id="friends-link" class="hidden">
                 Friends
                 <span id="friend-notification-badge" class="notification-badge hidden"></span>
@@ -372,40 +415,42 @@
             </form>
         </div>
 
-        <!-- Dashboard -->
-        <!-- Add this to your dashboard -->
-<div class="card" id="view-snaps-container">
-    <h3>Your Snaps</h3>
-    <div id="received-snaps">
-        <p id="no-snaps">You don't have any snaps yet.</p>
-    </div>
-</div>
-        <!-- Add this to your dashboard section -->
-<div class="card" id="send-snap-container">
-    <h3>Send a Snap</h3>
-    <div class="camera-container">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-        <img id="captured-image" class="hidden">
-    </div>
-    <div class="camera-controls">
-        <button id="capture-btn">Capture</button>
-        <button id="retake-btn" class="hidden">Retake</button>
-    </div>
-    <form id="send-snap-form">
-        <select id="send-to-friend" required>
-            <option value="">Select a friend</option>
-        </select>
-        <input type="text" id="snap-caption" placeholder="Add a caption...">
-        <button type="submit" id="send-snap-btn" class="hidden" disabled>Send Snap</button>
-    </form>
-    <div id="send-snap-error" class="error hidden"></div>
-    <div id="send-snap-success" class="success hidden"></div>
-</div>
-        <div id="dashboard" class="hidden">
+        <!-- Snaps Screen -->
+        <div id="snaps-screen" class="hidden">
             <div class="card">
-                <h2 id="welcome-message">Welcome back!</h2>
-                <p>You are now logged in. Use the navigation to access friends and chat features.</p>
+                <div class="tabs">
+                    <div class="tab active" data-tab="send-snap">Send Snap</div>
+                    <div class="tab" data-tab="view-snaps">My Snaps</div>
+                </div>
+                
+                <div class="tab-content active" id="send-snap-tab">
+                    <h3>Send a Snap</h3>
+                    <div class="camera-container">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas"></canvas>
+                        <img id="captured-image" class="hidden">
+                    </div>
+                    <div class="camera-controls">
+                        <button id="capture-btn">Capture</button>
+                        <button id="retake-btn" class="hidden">Retake</button>
+                    </div>
+                    <form id="send-snap-form">
+                        <select id="send-to-friend" required>
+                            <option value="">Select a friend</option>
+                        </select>
+                        <input type="text" id="snap-caption" placeholder="Add a caption...">
+                        <button type="submit" id="send-snap-btn" class="hidden" disabled>Send Snap</button>
+                    </form>
+                    <div id="send-snap-error" class="error hidden"></div>
+                    <div id="send-snap-success" class="success hidden"></div>
+                </div>
+                
+                <div class="tab-content" id="view-snaps-tab">
+                    <h3>Received Snaps</h3>
+                    <div id="received-snaps">
+                        <p id="no-snaps">You don't have any snaps yet.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -479,7 +524,7 @@
         const homeScreen = document.getElementById('home-screen');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
-        const dashboard = document.getElementById('dashboard');
+        const snapsScreen = document.getElementById('snaps-screen');
         const friendsSystem = document.getElementById('friends-system');
         const chatSystem = document.getElementById('chat-system');
 
@@ -487,12 +532,13 @@
         const homeLink = document.getElementById('home-link');
         const loginLink = document.getElementById('login-link');
         const registerLink = document.getElementById('register-link');
-        const dashboardLink = document.getElementById('dashboard-link');
+        const snapsLink = document.getElementById('snaps-link');
         const friendsLink = document.getElementById('friends-link');
         const chatLink = document.getElementById('chat-link');
         const logoutLink = document.getElementById('logout-link');
 
         // Notification badges
+        const snapsNotificationBadge = document.getElementById('snaps-notification-badge');
         const friendNotificationBadge = document.getElementById('friend-notification-badge');
         const chatNotificationBadge = document.getElementById('chat-notification-badge');
 
@@ -504,6 +550,17 @@
         const loginFormElement = document.getElementById('login-form-element');
         const registerFormElement = document.getElementById('register-form-element');
         const searchFriendsForm = document.getElementById('search-friends-form');
+        const sendSnapForm = document.getElementById('send-snap-form');
+
+        // Camera elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedImage = document.getElementById('captured-image');
+        const captureBtn = document.getElementById('capture-btn');
+        const retakeBtn = document.getElementById('retake-btn');
+        const sendSnapBtn = document.getElementById('send-snap-btn');
+        const sendToFriendSelect = document.getElementById('send-to-friend');
+        const snapCaptionInput = document.getElementById('snap-caption');
 
         // Chat elements
         const chatFriendSelect = document.getElementById('chat-friend-select');
@@ -515,12 +572,15 @@
         // Current state
         let currentUser = null;
         let currentChatFriend = null;
+        let currentImageData = null;
+        let stream = null;
         let chatUpdateInterval = null;
 
         // Initialize the app
         function init() {
             checkAuthState();
             setupEventListeners();
+            setupCamera();
         }
 
         // Check if user is logged in
@@ -528,7 +588,7 @@
             currentUser = localStorage.getItem('currentUser');
             
             if (currentUser) {
-                showDashboard();
+                showSnapsScreen();
                 updateNotificationBadges();
             } else {
                 showHome();
@@ -550,9 +610,9 @@
                 e.preventDefault();
                 showRegister();
             });
-            dashboardLink.addEventListener('click', (e) => {
+            snapsLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                showDashboard();
+                showSnapsScreen();
             });
             friendsLink.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -575,6 +635,12 @@
             loginFormElement.addEventListener('submit', handleLogin);
             registerFormElement.addEventListener('submit', handleRegister);
             searchFriendsForm.addEventListener('submit', searchFriends);
+            sendSnapForm.addEventListener('submit', sendSnapToFriend);
+
+            // Camera buttons
+            captureBtn.addEventListener('click', capturePhoto);
+            retakeBtn.addEventListener('click', retakePhoto);
+            snapCaptionInput.addEventListener('input', updateSendSnapButtonState);
 
             // Chat system
             chatFriendSelect.addEventListener('change', handleChatFriendSelect);
@@ -588,9 +654,10 @@
             // Tab switching
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // Remove active class from all tabs and contents
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    const tabContainer = tab.closest('.tabs');
+                    // Remove active class from all tabs and contents in this container
+                    tabContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tabContainer.parentElement.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     
                     // Add active class to clicked tab and corresponding content
                     tab.classList.add('active');
@@ -598,6 +665,44 @@
                     document.getElementById(`${tabId}-tab`).classList.add('active');
                 });
             });
+        }
+
+        // Setup camera
+        function setupCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false 
+                })
+                .then((mediaStream) => {
+                    stream = mediaStream;
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch((error) => {
+                    console.error("Camera error: ", error);
+                    document.getElementById('send-snap-error').textContent = "Could not access the camera. Make sure you've granted permission.";
+                    document.getElementById('send-snap-error').classList.remove('hidden');
+                    captureBtn.disabled = true;
+                });
+            } else {
+                document.getElementById('send-snap-error').textContent = "Camera not supported on this device.";
+                document.getElementById('send-snap-error').classList.remove('hidden');
+                captureBtn.disabled = true;
+            }
+        }
+
+        // Stop camera
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.srcObject = null;
+            }
         }
 
         // Show screens
@@ -621,15 +726,21 @@
             updateNav();
         }
 
-        function showDashboard() {
+        function showSnapsScreen() {
             if (!currentUser) {
                 showHome();
                 return;
             }
 
             hideAllScreens();
-            dashboard.classList.remove('hidden');
+            snapsScreen.classList.remove('hidden');
             document.getElementById('welcome-message').textContent = `Welcome, ${currentUser}!`;
+            
+            // Load friends for sending snaps
+            loadFriendsForSending();
+            // Load received snaps
+            loadReceivedSnaps();
+            
             updateNav();
         }
 
@@ -649,7 +760,6 @@
             // Set first tab as active
             document.querySelector('.tab').click();
             
-            // Update nav
             updateNav();
         }
 
@@ -665,7 +775,6 @@
             // Load friends for chat selection
             loadChatFriends();
             
-            // Update nav
             updateNav();
             
             // Start chat update interval
@@ -679,11 +788,12 @@
             homeScreen.classList.add('hidden');
             loginForm.classList.add('hidden');
             registerForm.classList.add('hidden');
-            dashboard.classList.add('hidden');
+            snapsScreen.classList.add('hidden');
             friendsSystem.classList.add('hidden');
             chatSystem.classList.add('hidden');
             
-            // Stop chat update interval
+            // Stop camera and chat update interval
+            stopCamera();
             if (chatUpdateInterval) {
                 clearInterval(chatUpdateInterval);
                 chatUpdateInterval = null;
@@ -696,7 +806,7 @@
                 // User is logged in
                 loginLink.classList.add('hidden');
                 registerLink.classList.add('hidden');
-                dashboardLink.classList.remove('hidden');
+                snapsLink.classList.remove('hidden');
                 friendsLink.classList.remove('hidden');
                 chatLink.classList.remove('hidden');
                 logoutLink.classList.remove('hidden');
@@ -704,7 +814,7 @@
                 // User is not logged in
                 loginLink.classList.remove('hidden');
                 registerLink.classList.remove('hidden');
-                dashboardLink.classList.add('hidden');
+                snapsLink.classList.add('hidden');
                 friendsLink.classList.add('hidden');
                 chatLink.classList.add('hidden');
                 logoutLink.classList.add('hidden');
@@ -737,7 +847,7 @@
             currentUser = username;
             localStorage.setItem('currentUser', username);
             updateNotificationBadges();
-            showDashboard();
+            showSnapsScreen();
         }
 
         function handleRegister(e) {
@@ -776,7 +886,9 @@
                 friendRequests: [],
                 sentRequests: [],
                 chats: {},
-                unreadMessages: {}
+                receivedSnaps: [],
+                unreadMessages: {},
+                unreadSnaps: 0
             };
             
             // Save to localStorage
@@ -784,8 +896,8 @@
             currentUser = username;
             localStorage.setItem('currentUser', username);
             
-            // Redirect to dashboard
-            showDashboard();
+            // Redirect to snaps screen
+            showSnapsScreen();
         }
 
         function logout() {
@@ -1013,6 +1125,11 @@
             if (chatSystem.classList.contains('hidden') === false) {
                 loadChatFriends();
             }
+            
+            // Reload friends for sending snaps
+            if (snapsScreen.classList.contains('hidden') === false) {
+                loadFriendsForSending();
+            }
         }
 
         function startChatWithFriend(friendUsername) {
@@ -1145,6 +1262,192 @@
             }
         }
 
+        // Snap system functions
+        function loadFriendsForSending() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[currentUser];
+            
+            sendToFriendSelect.innerHTML = '<option value="">Select a friend</option>';
+            
+            if (user && user.friends && user.friends.length > 0) {
+                user.friends.forEach(friend => {
+                    const option = document.createElement('option');
+                    option.value = friend;
+                    option.textContent = friend;
+                    sendToFriendSelect.appendChild(option);
+                });
+            }
+        }
+
+        function capturePhoto() {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            currentImageData = canvas.toDataURL('image/jpeg', 0.8);
+            capturedImage.src = currentImageData;
+            
+            video.classList.add('hidden');
+            capturedImage.classList.remove('hidden');
+            captureBtn.classList.add('hidden');
+            retakeBtn.classList.remove('hidden');
+            sendSnapBtn.classList.remove('hidden');
+            
+            stopCamera();
+            updateSendSnapButtonState();
+        }
+
+        function retakePhoto() {
+            video.classList.remove('hidden');
+            capturedImage.classList.add('hidden');
+            captureBtn.classList.remove('hidden');
+            retakeBtn.classList.add('hidden');
+            sendSnapBtn.classList.add('hidden');
+            currentImageData = null;
+            
+            setupCamera();
+            updateSendSnapButtonState();
+        }
+
+        function updateSendSnapButtonState() {
+            sendSnapBtn.disabled = !(currentImageData && sendToFriendSelect.value);
+        }
+
+        function sendSnapToFriend(e) {
+            e.preventDefault();
+            
+            const friendUsername = sendToFriendSelect.value;
+            const caption = snapCaptionInput.value.trim();
+            
+            if (!friendUsername || !currentImageData) {
+                document.getElementById('send-snap-error').textContent = 'Please select a friend and capture a photo';
+                document.getElementById('send-snap-error').classList.remove('hidden');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            const snapId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+            
+            // Add snap to recipient's received snaps
+            if (!users[friendUsername].receivedSnaps) {
+                users[friendUsername].receivedSnaps = [];
+            }
+            
+            users[friendUsername].receivedSnaps.unshift({
+                id: snapId,
+                from: currentUser,
+                imageData: currentImageData,
+                caption: caption,
+                sentAt: new Date().toISOString(),
+                expiresAt: expiresAt.toISOString(),
+                viewed: false
+            });
+            
+            // Add notification
+            users[friendUsername].unreadSnaps = (users[friendUsername].unreadSnaps || 0) + 1;
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Reset form
+            retakePhoto();
+            snapCaptionInput.value = '';
+            sendToFriendSelect.value = '';
+            
+            // Show success message
+            document.getElementById('send-snap-success').textContent = `Snap sent to ${friendUsername}!`;
+            document.getElementById('send-snap-success').classList.remove('hidden');
+            document.getElementById('send-snap-error').classList.add('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('send-snap-success').classList.add('hidden');
+            }, 3000);
+            
+            // Update notification badges
+            updateNotificationBadges();
+        }
+
+        function loadReceivedSnaps() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users[currentUser];
+            const receivedSnapsContainer = document.getElementById('received-snaps');
+            const noSnapsMessage = document.getElementById('no-snaps');
+            
+            if (!user.receivedSnaps || user.receivedSnaps.length === 0) {
+                receivedSnapsContainer.innerHTML = '';
+                noSnapsMessage.classList.remove('hidden');
+                return;
+            }
+            
+            // Filter out expired snaps
+            const currentTime = new Date();
+            const validSnaps = user.receivedSnaps.filter(snap => new Date(snap.expiresAt) > currentTime);
+            
+            if (validSnaps.length === 0) {
+                receivedSnapsContainer.innerHTML = '';
+                noSnapsMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noSnapsMessage.classList.add('hidden');
+            
+            let snapsHTML = '';
+            validSnaps.forEach(snap => {
+                snapsHTML += `
+                    <div class="snap-item" data-snap-id="${snap.id}">
+                        <div class="snap-header">
+                            <span>From: ${snap.from}</span>
+                            <span>${formatDate(snap.sentAt)}</span>
+                        </div>
+                        <div class="snap-content ${snap.viewed ? '' : 'unviewed'}">
+                            <img src="${snap.imageData}" alt="${snap.caption}" class="snap-image">
+                            <p>${snap.caption || 'No caption'}</p>
+                            <div class="snap-status">
+                                ${snap.viewed ? 
+                                    'Viewed' : 
+                                    '<button class="view-snap-btn">View Snap</button>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            receivedSnapsContainer.innerHTML = snapsHTML;
+            
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-snap-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const snapId = this.closest('.snap-item').dataset.snapId;
+                    viewSnap(snapId);
+                });
+            });
+            
+            // Update unread count
+            if (user.unreadSnaps > 0) {
+                users[currentUser].unreadSnaps = 0;
+                localStorage.setItem('users', JSON.stringify(users));
+                updateNotificationBadges();
+            }
+        }
+
+        function viewSnap(snapId) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const snap = users[currentUser].receivedSnaps.find(s => s.id === snapId);
+            
+            if (snap) {
+                // Mark as viewed
+                snap.viewed = true;
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                // Show the snap in a modal or alert
+                alert(`Showing snap from ${snap.from}: ${snap.caption || 'No caption'}`);
+                
+                // Reload snaps to update UI
+                loadReceivedSnaps();
+            }
+        }
+
         // Notification functions
         function updateNotificationBadges() {
             if (!currentUser) return;
@@ -1171,9 +1474,28 @@
             } else {
                 chatNotificationBadge.classList.add('hidden');
             }
+            
+            // Snap notifications
+            const unreadSnaps = user.unreadSnaps || 0;
+            if (unreadSnaps > 0) {
+                snapsNotificationBadge.textContent = unreadSnaps;
+                snapsNotificationBadge.classList.remove('hidden');
+            } else {
+                snapsNotificationBadge.classList.add('hidden');
+            }
         }
 
         // Helper functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString([], {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
         function formatChatTime(timestamp) {
             const date = new Date(timestamp);
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1182,6 +1504,5 @@
         // Initialize the app
         document.addEventListener('DOMContentLoaded', init);
     </script>
-    <script src="myscripts.js"></script>
 </body>
 </html>
