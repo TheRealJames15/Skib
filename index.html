@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <head>
     <meta charset="UTF-8">
+    <title>SnapWeb+ Clone</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnapLite+</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnapLite+ with Friends & Chat</title>
     <style>
         :root {
             --snap-yellow: #fffc00;
@@ -20,1205 +14,887 @@
             --snap-green: #34c759;
             --snap-red: #ff3b30;
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--snap-gray);
+            background: var(--snap-gray);
             color: var(--snap-black);
-            line-height: 1.6;
         }
-        
         header {
-            background-color: var(--snap-yellow);
+            background: var(--snap-yellow);
             padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.09);
         }
-        
-        .logo {
-            font-weight: bold;
-            font-size: 1.5rem;
+        .logo { font-weight: bold; font-size: 1.6rem; }
+        nav { display: flex; gap: 17px; }
+        nav a { color: var(--snap-black); text-decoration: none; font-weight: 500; padding: 6px 10px; border-radius: 15px; position: relative; }
+        nav a:hover { background: rgba(0,0,0,0.11);}
+        .notification-badge {
+            position: absolute; top: -5px; right: -6px; background: var(--snap-red); color: white;
+            border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px;
         }
-        
-        nav {
-            display: flex;
-            gap: 15px;
-        }
-        
-        nav a {
-            color: var(--snap-black);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 15px;
+        .container { max-width: 620px; margin: 22px auto; padding: 0 15px; }
+        .card { background: var(--snap-white); border-radius: 10px; padding: 22px; margin-bottom: 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.07);}
+        h1, h2, h3 { margin-bottom: 16px; }
+        button { padding: 10px 16px; border-radius: 8px; border: none; font-weight: bold; background: var(--snap-yellow); cursor:pointer;}
+        button.primary { background: var(--snap-blue); color: #fff;}
+        button.success { background: var(--snap-green); color: #fff;}
+        button.danger { background: var(--snap-red); color: #fff;}
+        button:disabled { background: #eee; color: #888;}
+        .hidden { display: none !important; }
+        .error { color: var(--snap-red); margin-top: 5px; font-size: 0.97rem; }
+        .success { color: var(--snap-green); margin-top: 5px; font-size: 0.97rem; }
+        .flex { display: flex; align-items: center; }
+        .gap-10 { gap: 10px; }
+        .gap-18 { gap: 18px; }
+        .ml-8 { margin-left: 8px;}
+        .ml-12 { margin-left: 12px;}
+        /* Stories */
+        .stories-bar { display: flex; gap: 16px; padding: 10px 0; align-items: center; overflow-x: auto;}
+        .story-circle {
+            width: 62px; height: 62px; border-radius: 50%; background: #eee; border: 3px solid var(--snap-yellow);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;
             position: relative;
         }
-        
-        nav a:hover {
-            background-color: rgba(0,0,0,0.1);
+        .story-circle.seen { border-color: #bbb; opacity: 0.85;}
+        .story-username { font-size: 0.83rem; text-align: center; padding-top: 3px; width:100%; overflow:hidden; text-overflow:ellipsis }
+        .story-circle img { width:100%;height:100%;object-fit:cover; }
+        /* Snap view modal */
+        #snap-modal, #story-modal, #toast {
+            position: fixed; left:0; width:100vw; z-index: 1000;
         }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: var(--snap-red);
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
+        #snap-modal, #story-modal { top:0; height:100vh; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center;}
+        .modal-content { background: #fff; border-radius: 10px; padding: 20px; max-width: 93vw; max-height: 92vh; display: flex; flex-direction: column; align-items: center;}
+        .modal-img { max-width: 82vw; max-height: 72vh; border-radius: 8px;}
+        .modal-caption { margin: 12px 0 0 0; font-size: 1.12rem;}
+        #toast {
+            bottom: 6%; left:50%; transform:translateX(-50%);
+            background: var(--snap-black); color: var(--snap-yellow); padding: 12px 20px; border-radius: 22px;
+            font-weight:bold; font-size:1.06rem; display:none; min-width:120px; text-align:center;
         }
-        
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 0 15px;
+        /* Avatars */
+        .avatar {
+            width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1.6px solid #ddd;
+            margin-right: 10px; background: #efefef;
         }
-        
-        .card {
-            background-color: var(--snap-white);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        h1, h2, h3 {
-            margin-bottom: 15px;
-        }
-        
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        input, textarea, button {
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-        }
-        
-        button {
-            background-color: var(--snap-yellow);
-            color: var(--snap-black);
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        button.primary {
-            background-color: var(--snap-blue);
-            color: white;
-        }
-        
-        button.success {
-            background-color: var(--snap-green);
-            color: white;
-        }
-        
-        button.danger {
-            background-color: var(--snap-red);
-            color: white;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        .error {
-            color: var(--snap-red);
-            margin-top: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .success {
-            color: var(--snap-green);
-            margin-top: 5px;
-            font-size: 0.9rem;
-        }
-        
-        /* Friends system styles */
-        .friends-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .friend-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-        }
-        
-        .friend-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
-        /* Chat system styles */
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 400px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .chat-header {
-            background-color: var(--snap-yellow);
-            padding: 10px 15px;
-            font-weight: bold;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            background-color: white;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            max-width: 80%;
-        }
-        
-        .message.sent {
-            margin-left: auto;
-            text-align: right;
-        }
-        
-        .message.received {
-            margin-right: auto;
-        }
-        
-        .message-content {
-            display: inline-block;
-            padding: 10px 15px;
-            border-radius: 18px;
-            background-color: #f0f0f0;
-        }
-        
-        .message.sent .message-content {
-            background-color: var(--snap-blue);
-            color: white;
-        }
-        
-        .message-info {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 3px;
-        }
-        
-        .chat-input {
-            display: flex;
-            border-top: 1px solid #ddd;
-            background-color: white;
-        }
-        
-        .chat-input input {
-            flex: 1;
-            border: none;
-            border-radius: 0;
-        }
-        
-        .chat-input button {
-            border-radius: 0;
-        }
-        
+        .avatar-sm { width: 28px; height: 28px; margin-right: 7px;}
+        .avatar-lg { width: 64px; height: 64px; border-width: 2.5px;}
+        /* Camera container */
+        .camera-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        video, canvas { width: 100%; height: 240px; border-radius: 10px; background: #222;}
+        #captured-image { width: 100%; height: 240px; border-radius: 10px; object-fit: cover;}
+        /* Chat */
+        .chat-container { display: flex; flex-direction: column; height: 350px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;}
+        .chat-header { background: var(--snap-yellow); padding: 10px 15px; font-weight: bold;}
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; background: white;}
+        .message { margin-bottom: 15px; max-width: 80%;}
+        .message.sent { margin-left: auto; text-align: right;}
+        .message.received { margin-right: auto;}
+        .message-content { display: inline-block; padding: 10px 15px; border-radius: 18px; background: #f0f0f0;}
+        .message.sent .message-content { background: var(--snap-blue); color: white;}
+        .message-info { font-size: 0.8rem; color: #666; margin-top: 3px;}
+        .seen-label { font-size:0.77em; color:var(--snap-green); margin-left:8px;}
+        .chat-input { display: flex; border-top: 1px solid #ddd; background: white;}
+        .chat-input input { flex: 1; border: none; border-radius: 0; padding: 12px;}
+        .chat-input button { border-radius: 0; }
+        /* Friends */
+        .friends-list { display: flex; flex-direction: column; gap: 10px; margin-top:8px;}
+        .friend-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f9f9f9; border-radius: 8px;}
+        .friend-actions { display: flex; gap: 5px;}
+        .friend-details { display: flex; align-items: center; }
+        /* Requests */
+        .req-badge { background: var(--snap-blue); color: #fff; border-radius: 12px; padding: 1px 8px; font-size:0.85em; margin-left:8px;}
         /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 15px;
-        }
-        
-        .tab {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .tab.active {
-            border-bottom-color: var(--snap-blue);
-            font-weight: bold;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
+        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 15px; }
+        .tab { padding: 10px 15px; cursor: pointer; border-bottom: 3px solid transparent;}
+        .tab.active { border-bottom-color: var(--snap-blue); font-weight: bold;}
+        .tab-content { display: none; }
+        .tab-content.active { display: block;}
         @media (max-width: 480px) {
-            header {
-                padding: 10px 15px;
-            }
-            
-            .logo {
-                font-size: 1.2rem;
-            }
-            
-            nav {
-                gap: 10px;
-            }
-            
-            .container {
-                padding: 0 10px;
-            }
-            
-            .card {
-                padding: 15px;
-            }
-            
-            .chat-container {
-                height: 300px;
-            }
+            header { padding: 10px 8px;}
+            .container { padding: 0 4px;}
+            .card { padding: 10px;}
+            .stories-bar { gap: 8px;}
+            .story-circle { width: 48px; height: 48px;}
         }
     </style>
 </head>
 <body>
+    <!-- Toast -->
+    <div id="toast"></div>
+    <!-- Snap View Modal -->
+    <div id="snap-modal">
+        <div class="modal-content">
+            <img id="snap-modal-img" class="modal-img" />
+            <div id="snap-modal-caption" class="modal-caption"></div>
+        </div>
+    </div>
+    <!-- Story View Modal -->
+    <div id="story-modal">
+        <div class="modal-content">
+            <img id="story-modal-img" class="modal-img" />
+            <div id="story-modal-caption" class="modal-caption"></div>
+        </div>
+    </div>
+    <!-- Header -->
     <header>
-        <div class="logo">SnapLite+</div>
+        <div class="logo">SnapWeb+</div>
         <nav>
-            <a href="#" id="home-link">Home</a>
-            <a href="#" id="login-link" class="hidden">Login</a>
-            <a href="#" id="register-link" class="hidden">Register</a>
-            <a href="#" id="dashboard-link" class="hidden">My Snaps</a>
-            <a href="#" id="friends-link" class="hidden">
-                Friends
-                <span id="friend-notification-badge" class="notification-badge hidden"></span>
-            </a>
-            <a href="#" id="chat-link" class="hidden">
-                Chat
-                <span id="chat-notification-badge" class="notification-badge hidden"></span>
-            </a>
-            <a href="#" id="logout-link" class="hidden">Logout</a>
+            <a href="#" id="nav-home">Home</a>
+            <a href="#" id="nav-stories" class="hidden">Stories</a>
+            <a href="#" id="nav-snaps" class="hidden">Snaps <span id="snap-badge" class="notification-badge hidden"></span></a>
+            <a href="#" id="nav-friends" class="hidden">Friends <span id="req-badge" class="notification-badge hidden"></span></a>
+            <a href="#" id="nav-chat" class="hidden">Chat <span id="chat-badge" class="notification-badge hidden"></span></a>
+            <a href="#" id="nav-profile" class="hidden">Profile</a>
+            <a href="#" id="nav-logout" class="hidden">Logout</a>
+            <a href="#" id="nav-login">Login</a>
+            <a href="#" id="nav-register">Register</a>
         </nav>
     </header>
-
     <div class="container">
-        <!-- Home Screen -->
-        <div id="home-screen" class="card">
-            <h1>Welcome to SnapLite+</h1>
-            <p>A Snapchat-like app with friends and chat - all in your browser!</p>
-            <div id="home-buttons" style="margin-top: 20px;">
-                <button id="go-to-login" style="margin-right: 10px;">Login</button>
-                <button id="go-to-register">Register</button>
-            </div>
+        <!-- Home -->
+        <div id="screen-home" class="card">
+            <h1>Welcome to SnapWeb+</h1>
+            <p>Snapchat-style app: stories, snaps, friends, chat, and read receipts – all in your browser!</p>
+            <button id="btn-home-login" style="margin-right: 8px;">Login</button>
+            <button id="btn-home-register">Register</button>
         </div>
-
-        <!-- Login Form -->
-        <div id="login-form" class="card hidden">
+        <!-- Login -->
+        <div id="screen-login" class="card hidden">
             <h2>Login</h2>
-            <form id="login-form-element">
-                <div>
-                    <input type="text" id="login-username" placeholder="Username" required>
-                </div>
-                <div>
-                    <input type="password" id="login-password" placeholder="Password" required>
-                </div>
+            <form id="form-login">
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
                 <div id="login-error" class="error hidden"></div>
                 <button type="submit">Login</button>
             </form>
         </div>
-
-        <!-- Register Form -->
-        <div id="register-form" class="card hidden">
+        <!-- Register -->
+        <div id="screen-register" class="card hidden">
             <h2>Register</h2>
-            <form id="register-form-element">
-                <div>
-                    <input type="text" id="register-username" placeholder="Username" required>
-                </div>
-                <div>
-                    <input type="password" id="register-password" placeholder="Password" required>
-                </div>
+            <form id="form-register">
+                <input type="text" id="register-username" placeholder="Username" required>
+                <input type="password" id="register-password" placeholder="Password" required>
+                <label>Avatar (optional): <input type="file" id="register-avatar" accept="image/*"></label>
                 <div id="register-error" class="error hidden"></div>
                 <button type="submit">Register</button>
             </form>
         </div>
-
-        <!-- Dashboard -->
-        <!-- In your HTML, move these sections inside the dashboard div -->
-<div id="dashboard" class="hidden">
-    <div class="card">
-        <h2 id="welcome-message">Welcome back!</h2>
-        <p>You are now logged in. Use the navigation to access friends and chat features.</p>
-    </div>
-    
-    <!-- Add these inside the dashboard div -->
-    <div class="card" id="view-snaps-container">
-        <h3>Your Snaps</h3>
-        <div id="received-snaps">
-            <p id="no-snaps">You don't have any snaps yet.</p>
-        </div>
-    </div>
-
-    <div class="card" id="send-snap-container">
-        <h3>Send a Snap</h3>
-        <div class="camera-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas"></canvas>
-            <img id="captured-image" class="hidden">
-        </div>
-        <div class="camera-controls">
-            <button id="capture-btn">Capture</button>
-            <button id="retake-btn" class="hidden">Retake</button>
-        </div>
-        <form id="send-snap-form">
-            <select id="send-to-friend" required>
-                <option value="">Select a friend</option>
-            </select>
-            <input type="text" id="snap-caption" placeholder="Add a caption...">
-            <button type="submit" id="send-snap-btn" class="hidden" disabled>Send Snap</button>
-        </form>
-        <div id="send-snap-error" class="error hidden"></div>
-        <div id="send-snap-success" class="success hidden"></div>
-    </div>
-</div>
-        <!-- Add this to your dashboard -->
-<div class="card" id="view-snaps-container">
-    <h3>Your Snaps</h3>
-    <div id="received-snaps">
-        <p id="no-snaps">You don't have any snaps yet.</p>
-    </div>
-</div>
-        <!-- Add this to your dashboard section -->
-<div class="card" id="send-snap-container">
-    <h3>Send a Snap</h3>
-    <div class="camera-container">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-        <img id="captured-image" class="hidden">
-    </div>
-    <div class="camera-controls">
-        <button id="capture-btn">Capture</button>
-        <button id="retake-btn" class="hidden">Retake</button>
-    </div>
-    <form id="send-snap-form">
-        <select id="send-to-friend" required>
-            <option value="">Select a friend</option>
-        </select>
-        <input type="text" id="snap-caption" placeholder="Add a caption...">
-        <button type="submit" id="send-snap-btn" class="hidden" disabled>Send Snap</button>
-    </form>
-    <div id="send-snap-error" class="error hidden"></div>
-    <div id="send-snap-success" class="success hidden"></div>
-</div>
-        <div id="dashboard" class="hidden">
-            <div class="card">
-                <h2 id="welcome-message">Welcome back!</h2>
-                <p>You are now logged in. Use the navigation to access friends and chat features.</p>
+        <!-- Stories Screen -->
+        <div id="screen-stories" class="card hidden">
+            <h2>Stories</h2>
+            <div class="stories-bar" id="stories-bar"></div>
+            <div style="margin:10px 0;">
+                <button id="btn-add-story" class="primary">+ Add to Story</button>
             </div>
         </div>
-
-        <!-- Friends System -->
-        <div id="friends-system" class="hidden">
-            <div class="card">
-                <h2>Friends</h2>
-                
-                <div class="tabs">
-                    <div class="tab active" data-tab="friends">My Friends</div>
-                    <div class="tab" data-tab="requests">Friend Requests</div>
-                    <div class="tab" data-tab="search">Add Friends</div>
+        <!-- Snaps Screen -->
+        <div id="screen-snaps" class="card hidden">
+            <h2>Your Snaps</h2>
+            <div id="received-snaps"></div>
+            <div style="margin-top:15px;">
+                <button id="btn-send-snap" class="primary">Send a Snap</button>
+            </div>
+        </div>
+        <!-- Send Snap -->
+        <div id="screen-send-snap" class="card hidden">
+            <h2>Send a Snap</h2>
+            <div class="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas" class="hidden"></canvas>
+                <img id="captured-image" class="hidden">
+                <div style="margin:8px 0;">
+                    <button id="capture-btn">Capture</button>
+                    <button id="retake-btn" class="hidden">Retake</button>
                 </div>
-                
-                <div class="tab-content active" id="friends-tab">
-                    <h3>Your Friends</h3>
-                    <div id="friends-list" class="friends-list"></div>
-                    <div id="no-friends" class="hidden">You don't have any friends yet.</div>
-                </div>
-                
-                <div class="tab-content" id="requests-tab">
-                    <h3>Friend Requests</h3>
-                    <div id="received-requests" class="friends-list"></div>
-                    <div id="no-requests" class="hidden">You don't have any friend requests.</div>
-                </div>
-                
-                <div class="tab-content" id="search-tab">
-                    <h3>Add Friends</h3>
-                    <form id="search-friends-form">
-                        <input type="text" id="friend-search" placeholder="Search by username">
-                        <button type="submit">Search</button>
-                    </form>
-                    <div id="search-results" class="friends-list" style="margin-top: 15px;"></div>
-                    <div id="no-search-results" class="hidden">No users found.</div>
+            </div>
+            <form id="form-send-snap">
+                <select id="send-to-friend" required>
+                    <option value="">Select a friend</option>
+                </select>
+                <input type="text" id="snap-caption" placeholder="Add a caption...">
+                <button type="submit" id="send-snap-btn" class="primary hidden" disabled>Send Snap</button>
+            </form>
+            <div id="send-snap-error" class="error hidden"></div>
+            <div id="send-snap-success" class="success hidden"></div>
+        </div>
+        <!-- Friends System Screen -->
+        <div id="screen-friends" class="card hidden">
+            <h2>Friends</h2>
+            <div class="tabs">
+                <div class="tab active" data-tab="friends">My Friends</div>
+                <div class="tab" data-tab="requests">Requests</div>
+                <div class="tab" data-tab="search">Find Friends</div>
+            </div>
+            <div class="tab-content active" id="friends-tab">
+                <div class="friends-list" id="friends-list"></div>
+                <div id="no-friends" class="ml-8" style="color:#888;margin-top:10px;">No friends yet.</div>
+            </div>
+            <div class="tab-content" id="requests-tab">
+                <h3>Incoming</h3>
+                <div class="friends-list" id="incoming-requests"></div>
+                <div id="no-requests" class="ml-8" style="color:#888;margin-top:10px;">No new requests.</div>
+                <hr style="margin:18px 0 8px 0;">
+                <h3>Sent</h3>
+                <div class="friends-list" id="sent-requests"></div>
+                <div id="no-sent-requests" class="ml-8" style="color:#888;margin-top:10px;">No pending sent requests.</div>
+            </div>
+            <div class="tab-content" id="search-tab">
+                <form id="search-friends-form" style="display:flex;gap:7px;">
+                    <input type="text" id="friend-search" placeholder="Search by username" style="flex:1;">
+                    <button type="submit" class="primary">Search</button>
+                </form>
+                <div id="search-results" class="friends-list" style="margin-top: 12px;"></div>
+                <div id="no-search-results" class="ml-8" style="color:#888;">No users found.</div>
+            </div>
+        </div>
+        <!-- Chat Screen -->
+        <div id="screen-chat" class="card hidden">
+            <h2>Chat</h2>
+            <div style="margin-bottom: 8px;">
+                <select id="chat-friend-select" style="width: 100%; padding: 10px; border-radius: 8px;">
+                    <option value="">Select a friend to chat with</option>
+                </select>
+            </div>
+            <div class="chat-container">
+                <div class="chat-header" id="chat-header">Select a friend to start chatting</div>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Type a message..." disabled>
+                    <button id="send-message" disabled>Send</button>
                 </div>
             </div>
         </div>
-
-        <!-- Chat System -->
-        <div id="chat-system" class="hidden">
-            <div class="card">
-                <h2>Chat</h2>
-                
-                <div id="chat-selector" style="margin-bottom: 15px;">
-                    <select id="chat-friend-select" style="width: 100%; padding: 10px; border-radius: 8px;">
-                        <option value="">Select a friend to chat with</option>
-                    </select>
-                </div>
-                
-                <div id="active-chat">
-                    <div class="chat-container">
-                        <div class="chat-header" id="chat-header">Select a friend to start chatting</div>
-                        <div class="chat-messages" id="chat-messages"></div>
-                        <div class="chat-input">
-                            <input type="text" id="chat-input" placeholder="Type a message..." disabled>
-                            <button id="send-message" disabled>Send</button>
-                        </div>
-                    </div>
-                </div>
+        <!-- Profile Screen -->
+        <div id="screen-profile" class="card hidden">
+            <h2>Profile</h2>
+            <div style="margin-bottom:10px;display:flex;align-items:center;">
+                <img id="profile-avatar" src="" class="avatar avatar-lg" />
+                <span id="profile-username" style="font-size:1.2em;margin-left:12px;"></span>
+                <input type="file" id="profile-avatar-upload" accept="image/*" class="hidden">
+                <button id="btn-avatar-upload" style="margin-left:18px;">Change Avatar</button>
+            </div>
+            <div>
+                <h3>Friends</h3>
+                <div id="profile-friends" class="friends-list"></div>
             </div>
         </div>
     </div>
-
     <script>
-        // Initialize localStorage if empty
-        if (!localStorage.getItem('users')) {
-            localStorage.setItem('users', JSON.stringify({}));
-        }
-
-        // DOM Elements
-        const homeScreen = document.getElementById('home-screen');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const dashboard = document.getElementById('dashboard');
-        const friendsSystem = document.getElementById('friends-system');
-        const chatSystem = document.getElementById('chat-system');
-
-        // Navigation Links
-        const homeLink = document.getElementById('home-link');
-        const loginLink = document.getElementById('login-link');
-        const registerLink = document.getElementById('register-link');
-        const dashboardLink = document.getElementById('dashboard-link');
-        const friendsLink = document.getElementById('friends-link');
-        const chatLink = document.getElementById('chat-link');
-        const logoutLink = document.getElementById('logout-link');
-
-        // Notification badges
-        const friendNotificationBadge = document.getElementById('friend-notification-badge');
-        const chatNotificationBadge = document.getElementById('chat-notification-badge');
-
-        // Home buttons
-        const goToLogin = document.getElementById('go-to-login');
-        const goToRegister = document.getElementById('go-to-register');
-
-        // Forms
-        const loginFormElement = document.getElementById('login-form-element');
-        const registerFormElement = document.getElementById('register-form-element');
-        const searchFriendsForm = document.getElementById('search-friends-form');
-
-        // Chat elements
-        const chatFriendSelect = document.getElementById('chat-friend-select');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const sendMessageBtn = document.getElementById('send-message');
-        const chatHeader = document.getElementById('chat-header');
-
-        // Current state
-        let currentUser = null;
-        let currentChatFriend = null;
-        let chatUpdateInterval = null;
-
-        // Initialize the app
-        function init() {
-            checkAuthState();
-            setupEventListeners();
-        }
-
-        // Check if user is logged in
-        function checkAuthState() {
-            currentUser = localStorage.getItem('currentUser');
-            
-            if (currentUser) {
-                showDashboard();
-                updateNotificationBadges();
-            } else {
-                showHome();
-            }
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Navigation
-            homeLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showHome();
-            });
-            loginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showLogin();
-            });
-            registerLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showRegister();
-            });
-            dashboardLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showDashboard();
-            });
-            friendsLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showFriendsSystem();
-            });
-            chatLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                showChatSystem();
-            });
-            logoutLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                logout();
-            });
-
-            // Home buttons
-            goToLogin.addEventListener('click', showLogin);
-            goToRegister.addEventListener('click', showRegister);
-
-            // Forms
-            loginFormElement.addEventListener('submit', handleLogin);
-            registerFormElement.addEventListener('submit', handleRegister);
-            searchFriendsForm.addEventListener('submit', searchFriends);
-
-            // Chat system
-            chatFriendSelect.addEventListener('change', handleChatFriendSelect);
-            sendMessageBtn.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-
-            // Tab switching
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    // Remove active class from all tabs and contents
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    
-                    // Add active class to clicked tab and corresponding content
-                    tab.classList.add('active');
-                    const tabId = tab.getAttribute('data-tab');
-                    document.getElementById(`${tabId}-tab`).classList.add('active');
-                });
-            });
-        }
-
-        // Show screens
-        function showHome() {
-            hideAllScreens();
-            homeScreen.classList.remove('hidden');
-            updateNav();
-        }
-
-        function showLogin() {
-            hideAllScreens();
-            loginForm.classList.remove('hidden');
-            document.getElementById('login-error').classList.add('hidden');
-            updateNav();
-        }
-
-        function showRegister() {
-            hideAllScreens();
-            registerForm.classList.remove('hidden');
-            document.getElementById('register-error').classList.add('hidden');
-            updateNav();
-        }
-
-        function showDashboard() {
-            if (!currentUser) {
-                showHome();
-                return;
-            }
-
-            hideAllScreens();
-            dashboard.classList.remove('hidden');
-            document.getElementById('welcome-message').textContent = `Welcome, ${currentUser}!`;
-            updateNav();
-        }
-
-        function showFriendsSystem() {
-            if (!currentUser) {
-                showHome();
-                return;
-            }
-
-            hideAllScreens();
-            friendsSystem.classList.remove('hidden');
-            
-            // Load friends data
-            loadFriendsList();
-            loadFriendRequests();
-            
-            // Set first tab as active
-            document.querySelector('.tab').click();
-            
-            // Update nav
-            updateNav();
-        }
-
-        function showChatSystem() {
-            if (!currentUser) {
-                showHome();
-                return;
-            }
-
-            hideAllScreens();
-            chatSystem.classList.remove('hidden');
-            
-            // Load friends for chat selection
-            loadChatFriends();
-            
-            // Update nav
-            updateNav();
-            
-            // Start chat update interval
-            if (chatUpdateInterval) {
-                clearInterval(chatUpdateInterval);
-            }
-            chatUpdateInterval = setInterval(updateChat, 2000);
-        }
-
-        function hideAllScreens() {
-            homeScreen.classList.add('hidden');
-            loginForm.classList.add('hidden');
-            registerForm.classList.add('hidden');
-            dashboard.classList.add('hidden');
-            friendsSystem.classList.add('hidden');
-            chatSystem.classList.add('hidden');
-            
-            // Stop chat update interval
-            if (chatUpdateInterval) {
-                clearInterval(chatUpdateInterval);
-                chatUpdateInterval = null;
-            }
-        }
-
-        // Update navigation based on auth state
-        function updateNav() {
-            if (currentUser) {
-                // User is logged in
-                loginLink.classList.add('hidden');
-                registerLink.classList.add('hidden');
-                dashboardLink.classList.remove('hidden');
-                friendsLink.classList.remove('hidden');
-                chatLink.classList.remove('hidden');
-                logoutLink.classList.remove('hidden');
-            } else {
-                // User is not logged in
-                loginLink.classList.remove('hidden');
-                registerLink.classList.remove('hidden');
-                dashboardLink.classList.add('hidden');
-                friendsLink.classList.add('hidden');
-                chatLink.classList.add('hidden');
-                logoutLink.classList.add('hidden');
-            }
-        }
-
-        // Auth handlers
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            const errorElement = document.getElementById('login-error');
-            
-            if (!users[username]) {
-                errorElement.textContent = 'Username not found';
-                errorElement.classList.remove('hidden');
-                return;
-            }
-            
-            if (users[username].password !== password) {
-                errorElement.textContent = 'Incorrect password';
-                errorElement.classList.remove('hidden');
-                return;
-            }
-            
-            // Successful login
-            currentUser = username;
-            localStorage.setItem('currentUser', username);
+    // ====== Storage Utilities ======
+    function getUsers(){ return JSON.parse(localStorage.getItem('users') || '{}'); }
+    function setUsers(users){ localStorage.setItem('users', JSON.stringify(users)); }
+    function getCurrentUser(){ return localStorage.getItem('currentUser'); }
+    function setCurrentUser(username){ localStorage.setItem('currentUser', username); }
+    function clearCurrentUser(){ localStorage.removeItem('currentUser'); }
+    function now(){ return (new Date()).toISOString(); }
+    // ====== App State ======
+    let videoStream = null, snapImgData = null, snapImgURL = null, snapTimer = null, chatPollInterval=null;
+    // ====== DOM Elements ======
+    const screens = {
+        home: document.getElementById('screen-home'),
+        login: document.getElementById('screen-login'),
+        register: document.getElementById('screen-register'),
+        stories: document.getElementById('screen-stories'),
+        snaps: document.getElementById('screen-snaps'),
+        sendSnap: document.getElementById('screen-send-snap'),
+        friends: document.getElementById('screen-friends'),
+        chat: document.getElementById('screen-chat'),
+        profile: document.getElementById('screen-profile')
+    };
+    const nav = {
+        home: document.getElementById('nav-home'),
+        stories: document.getElementById('nav-stories'),
+        snaps: document.getElementById('nav-snaps'),
+        friends: document.getElementById('nav-friends'),
+        chat: document.getElementById('nav-chat'),
+        profile: document.getElementById('nav-profile'),
+        logout: document.getElementById('nav-logout'),
+        login: document.getElementById('nav-login'),
+        register: document.getElementById('nav-register'),
+        snapBadge: document.getElementById('snap-badge'),
+        chatBadge: document.getElementById('chat-badge'),
+        reqBadge: document.getElementById('req-badge')
+    };
+    // ========== Routing ==========
+    function showScreen(screen) {
+        Object.values(screens).forEach(s => s.classList.add('hidden'));
+        screens[screen].classList.remove('hidden');
+        updateNav();
+        if (chatPollInterval) clearInterval(chatPollInterval);
+        if (screen === 'chat') chatPollInterval = setInterval(()=>{
+            let sel = document.getElementById('chat-friend-select');
+            if(sel.value) renderChatWithFriend(sel.value,true);
             updateNotificationBadges();
-            showDashboard();
+        },1600);
+    }
+    function updateNav() {
+        const user = getCurrentUser();
+        if (user) {
+            nav.stories.classList.remove('hidden');
+            nav.snaps.classList.remove('hidden');
+            nav.friends.classList.remove('hidden');
+            nav.chat.classList.remove('hidden');
+            nav.profile.classList.remove('hidden');
+            nav.logout.classList.remove('hidden');
+            nav.login.classList.add('hidden');
+            nav.register.classList.add('hidden');
+        } else {
+            nav.stories.classList.add('hidden');
+            nav.snaps.classList.add('hidden');
+            nav.friends.classList.add('hidden');
+            nav.chat.classList.add('hidden');
+            nav.profile.classList.add('hidden');
+            nav.logout.classList.add('hidden');
+            nav.login.classList.remove('hidden');
+            nav.register.classList.remove('hidden');
         }
-
-        function handleRegister(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('register-username').value.trim();
-            const password = document.getElementById('register-password').value.trim();
-            const errorElement = document.getElementById('register-error');
-            
-            // Validate inputs
-            if (username.length < 3) {
-                errorElement.textContent = 'Username must be at least 3 characters';
-                errorElement.classList.remove('hidden');
-                return;
-            }
-            
-            if (password.length < 6) {
-                errorElement.textContent = 'Password must be at least 6 characters';
-                errorElement.classList.remove('hidden');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            // Check if username exists
-            if (users[username]) {
-                errorElement.textContent = 'Username already exists';
-                errorElement.classList.remove('hidden');
-                return;
-            }
-            
-            // Create new user
-            users[username] = {
-                password: password,
-                friends: [],
-                friendRequests: [],
-                sentRequests: [],
-                chats: {},
-                unreadMessages: {}
+        updateNotificationBadges();
+    }
+    // ========== Navigation Events ==========
+    nav.home.onclick = () => showScreen('home');
+    nav.stories.onclick = () => { showScreen('stories'); renderStories(); };
+    nav.snaps.onclick = () => { showScreen('snaps'); renderSnaps(); };
+    nav.friends.onclick = () => { showScreen('friends'); renderFriendsTabs(); };
+    nav.chat.onclick = () => { showScreen('chat'); renderChatFriends(); };
+    nav.profile.onclick = () => { showScreen('profile'); renderProfile(); };
+    nav.logout.onclick = () => { clearCurrentUser(); showScreen('home'); };
+    nav.login.onclick = () => showScreen('login');
+    nav.register.onclick = () => showScreen('register');
+    // Home buttons
+    document.getElementById('btn-home-login').onclick = () => showScreen('login');
+    document.getElementById('btn-home-register').onclick = () => showScreen('register');
+    // ====== Toast ======
+    function toast(msg) {
+        let t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(()=>{t.style.display='none';},1800);
+    }
+    // ====== Auth ======
+    document.getElementById('form-login').onsubmit = e => {
+        e.preventDefault();
+        const u = document.getElementById('login-username').value.trim();
+        const p = document.getElementById('login-password').value;
+        const users = getUsers();
+        const err = document.getElementById('login-error');
+        if (!users[u]) {
+            err.textContent = 'Username not found'; err.classList.remove('hidden'); return;
+        }
+        if (users[u].password !== p) {
+            err.textContent = 'Incorrect password'; err.classList.remove('hidden'); return;
+        }
+        setCurrentUser(u);
+        err.classList.add('hidden');
+        showScreen('stories'); renderStories();
+    };
+    document.getElementById('form-register').onsubmit = function(e){
+        e.preventDefault();
+        const u = document.getElementById('register-username').value.trim();
+        const p = document.getElementById('register-password').value;
+        const avatarInput = document.getElementById('register-avatar');
+        const err = document.getElementById('register-error');
+        let users = getUsers();
+        if (u.length < 3) { err.textContent = 'Username at least 3 chars'; err.classList.remove('hidden'); return;}
+        if (p.length < 6) { err.textContent = 'Password at least 6 chars'; err.classList.remove('hidden'); return;}
+        if (users[u]) { err.textContent = 'Username already exists'; err.classList.remove('hidden'); return;}
+        let userRec = {
+            password: p, avatar: '', friends: [], stories: [], snaps: [],
+            chats: {}, unreadSnaps: 0, unreadChats: {}, seenStories: [],
+            friendRequests: [], sentRequests: []
+        };
+        // Avatar upload
+        if (avatarInput.files && avatarInput.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(ev) {
+                userRec.avatar = ev.target.result;
+                users[u] = userRec;
+                setUsers(users);
+                setCurrentUser(u);
+                err.classList.add('hidden');
+                showScreen('stories'); renderStories();
             };
-            
-            // Save to localStorage
-            localStorage.setItem('users', JSON.stringify(users));
-            currentUser = username;
-            localStorage.setItem('currentUser', username);
-            
-            // Redirect to dashboard
-            showDashboard();
+            reader.readAsDataURL(avatarInput.files[0]);
+            return;
         }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            showHome();
+        users[u] = userRec;
+        setUsers(users);
+        setCurrentUser(u);
+        err.classList.add('hidden');
+        showScreen('stories'); renderStories();
+    };
+    // ====== Stories ======
+    function renderStories() {
+        const users = getUsers(), me = getCurrentUser();
+        const myData = users[me];
+        // Remove expired stories
+        Object.keys(users).forEach(name => {
+            users[name].stories = (users[name].stories || []).filter(story => !storyExpired(story));
+        });
+        setUsers(users);
+        // Compose story bar
+        let bar = document.getElementById('stories-bar');
+        bar.innerHTML = '';
+        // Your story
+        bar.appendChild(makeStoryCircle(me, users[me], true));
+        // Friends' stories
+        (myData.friends||[]).forEach(friend => {
+            if ((users[friend]?.stories||[]).length > 0)
+                bar.appendChild(makeStoryCircle(friend, users[friend], false));
+        });
+    }
+    function makeStoryCircle(username, userData, isMe) {
+        let circle = document.createElement('div');
+        circle.className = 'story-circle' + ((userData.seenStories||[]).includes(username)?' seen':'');
+        if (userData.avatar) {
+            let img = document.createElement('img');
+            img.src = userData.avatar; img.alt = username;
+            circle.appendChild(img);
+        } else {
+            let span = document.createElement('span');
+            span.textContent = username[0].toUpperCase();
+            span.style.fontSize = '2rem';
+            circle.appendChild(span);
         }
-
-        // Friends system functions
-        function loadFriendsList() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
-            
-            if (!user || !user.friends || user.friends.length === 0) {
-                document.getElementById('friends-list').innerHTML = '';
-                document.getElementById('no-friends').classList.remove('hidden');
-                return;
-            }
-            
-            let friendsHTML = '';
-            user.friends.forEach(friendUsername => {
-                friendsHTML += `
-                    <div class="friend-item">
-                        <span>${friendUsername}</span>
-                        <div class="friend-actions">
-                            <button class="primary" onclick="startChatWithFriend('${friendUsername}')">Chat</button>
-                            <button class="danger" onclick="removeFriend('${friendUsername}')">Remove</button>
-                        </div>
+        let label = document.createElement('div');
+        label.className = 'story-username';
+        label.textContent = isMe ? 'Your Story' : username;
+        circle.appendChild(label);
+        circle.onclick = () => openStoryModal(username);
+        return circle;
+    }
+    // Story Modal
+    function openStoryModal(username) {
+        const users = getUsers();
+        const user = users[username];
+        if (!user || !(user.stories||[]).length) return;
+        let idx = 0;
+        function show(idx) {
+            let story = user.stories[idx];
+            document.getElementById('story-modal-img').src = story.img;
+            document.getElementById('story-modal-caption').textContent = story.caption || '';
+            document.getElementById('story-modal').style.display = 'flex';
+            setTimeout(() => {
+                idx++;
+                if(idx<user.stories.length){ show(idx);}
+                else { document.getElementById('story-modal').style.display='none'; }
+            }, 2500);
+        }
+        show(0);
+        // Mark as seen
+        if (username !== getCurrentUser()) {
+            let me = getCurrentUser();
+            users[me].seenStories = users[me].seenStories || [];
+            if (!users[me].seenStories.includes(username)) users[me].seenStories.push(username);
+            setUsers(users);
+        }
+    }
+    document.getElementById('story-modal').onclick = function(){ this.style.display='none'; };
+    document.getElementById('btn-add-story').onclick = function() {
+        showScreen('sendSnap'); startCamera();
+        document.getElementById('send-to-friend').innerHTML = `<option value="${getCurrentUser()}">My Story</option>`;
+    };
+    // ====== Snaps ======
+    function renderSnaps() {
+        const users = getUsers(), me = getCurrentUser();
+        let snaps = users[me].snaps || [];
+        let html = '';
+        if (!snaps.length) html = '<p>No snaps yet.</p>';
+        else snaps.slice().reverse().forEach((snap, idx) => {
+            let sender = users[snap.from]||{};
+            let senderAvatar = sender.avatar ? `<img src="${sender.avatar}" class="avatar avatar-sm" alt="">` : `<span class="avatar avatar-sm">${snap.from[0].toUpperCase()}</span>`;
+            html += `<div style="margin-bottom:12px;display:flex;align-items:center;">
+                ${senderAvatar}
+                <span style="font-weight:bold;">${snap.from}</span>
+                <button onclick="openSnapModal('${snap.img.replace(/'/g,"\\'")}', '${snap.caption||''}', ${snaps.length-1-idx});" class="ml-12">View</button>
+                <span style="color:#888;margin-left:10px;font-size:0.93em;">${formatTime(snap.time)}</span>
+                ${snap.viewed ? '<span style="color:green;margin-left:8px;">(viewed)</span>' : ''}
+            </div>`;
+        });
+        document.getElementById('received-snaps').innerHTML = html;
+    }
+    // Snap Modal
+    window.openSnapModal = function(img, caption, idx) {
+        document.getElementById('snap-modal-img').src = img;
+        document.getElementById('snap-modal-caption').textContent = caption;
+        document.getElementById('snap-modal').style.display = 'flex';
+        // Mark as viewed (read receipt)
+        const users = getUsers(), me = getCurrentUser();
+        users[me].snaps[idx].viewed = true;
+        setUsers(users);
+        renderSnaps();
+        setTimeout(() => { document.getElementById('snap-modal').style.display='none'; }, 2500);
+    }
+    document.getElementById('snap-modal').onclick = function(){ this.style.display='none'; };
+    document.getElementById('btn-send-snap').onclick = function() {
+        showScreen('sendSnap'); startCamera();
+        // Populate friend list
+        const users = getUsers(), me = getCurrentUser();
+        let sel = document.getElementById('send-to-friend');
+        sel.innerHTML = '<option value="">Select a friend</option>';
+        (users[me].friends||[]).forEach(f => {
+            sel.innerHTML += `<option value="${f}">${f}</option>`;
+        });
+    }
+    // ====== Camera and Send Snap ======
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const retakeBtn = document.getElementById('retake-btn');
+    const imgPreview = document.getElementById('captured-image');
+    document.getElementById('send-to-friend').onchange = function() {
+        document.getElementById('send-snap-btn').classList.toggle('hidden', !this.value);
+        document.getElementById('send-snap-btn').disabled = !this.value;
+    }
+    captureBtn.onclick = async function() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+        snapImgData = canvas.toDataURL('image/png');
+        imgPreview.src = snapImgData;
+        imgPreview.classList.remove('hidden');
+        canvas.classList.add('hidden');
+        video.classList.add('hidden');
+        captureBtn.classList.add('hidden');
+        retakeBtn.classList.remove('hidden');
+        document.getElementById('send-snap-btn').classList.remove('hidden');
+        document.getElementById('send-snap-btn').disabled = false;
+    };
+    retakeBtn.onclick = function() {
+        imgPreview.classList.add('hidden');
+        video.classList.remove('hidden');
+        captureBtn.classList.remove('hidden');
+        retakeBtn.classList.add('hidden');
+        document.getElementById('send-snap-btn').classList.add('hidden');
+        document.getElementById('send-snap-btn').disabled = true;
+    };
+    function startCamera(){
+        snapImgData = null;
+        imgPreview.src = '';
+        imgPreview.classList.add('hidden');
+        canvas.classList.add('hidden');
+        video.classList.remove('hidden');
+        captureBtn.classList.remove('hidden');
+        retakeBtn.classList.add('hidden');
+        document.getElementById('send-snap-btn').classList.add('hidden');
+        document.getElementById('send-snap-btn').disabled = true;
+        if (videoStream) {
+            video.srcObject = videoStream;
+            return;
+        }
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(stream => {
+            video.srcObject = stream;
+            videoStream = stream;
+        });
+    }
+    // Send snap form
+    document.getElementById('form-send-snap').onsubmit = function(e){
+        e.preventDefault();
+        const users = getUsers(), me = getCurrentUser();
+        const to = document.getElementById('send-to-friend').value;
+        const caption = document.getElementById('snap-caption').value;
+        if (!snapImgData) return;
+        if (to === me) {
+            // Add to story
+            users[me].stories.push({img:snapImgData, caption, time:now()});
+            setUsers(users);
+            toast('Added to your Story!');
+            setTimeout(()=>{ showScreen('stories'); renderStories(); }, 700);
+        } else {
+            // Send as snap
+            users[to].snaps.push({from: me, img:snapImgData, caption, time:now(), viewed:false});
+            setUsers(users);
+            toast('Snap sent!');
+            setTimeout(()=>{ showScreen('snaps'); renderSnaps(); }, 700);
+        }
+    };
+    // ====== Friends System ======
+    function renderFriendsTabs() {
+        // Tab logic
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.onclick = function() {
+                document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.getAttribute('data-tab')+'-tab').classList.add('active');
+            };
+        });
+        renderFriendsList();
+        renderRequests();
+        renderSentRequests();
+        // Show default tab
+        document.querySelector('.tab[data-tab="friends"]').click();
+        document.getElementById('search-friends-form').onsubmit = searchFriends;
+    }
+    function renderFriendsList() {
+        const users = getUsers(), me = getCurrentUser();
+        let friends = users[me].friends||[];
+        let el = document.getElementById('friends-list');
+        el.innerHTML = '';
+        if (!friends.length) {document.getElementById('no-friends').style.display='block'; return;}
+        document.getElementById('no-friends').style.display='none';
+        friends.forEach(friend=>{
+            let fUser = users[friend]||{};
+            let avatar = fUser.avatar?`<img src="${fUser.avatar}" class="avatar">`:`<span class="avatar">${friend[0].toUpperCase()}</span>`;
+            el.innerHTML += `<div class="friend-item">
+                <div class="friend-details">${avatar}<span>${friend}</span></div>
+                <div class="friend-actions">
+                    <button class="primary" onclick="startChatWithFriend('${friend}')">Chat</button>
+                    <button class="danger" onclick="removeFriend('${friend}')">Remove</button>
+                </div>
+            </div>`;
+        });
+    }
+    function renderRequests() {
+        const users = getUsers(), me = getCurrentUser();
+        let reqs = users[me].friendRequests||[];
+        let el = document.getElementById('incoming-requests');
+        el.innerHTML = '';
+        if (!reqs.length) {document.getElementById('no-requests').style.display='block'; return;}
+        document.getElementById('no-requests').style.display='none';
+        reqs.forEach(req=>{
+            let fUser = users[req.from]||{};
+            let avatar = fUser.avatar?`<img src="${fUser.avatar}" class="avatar">`:`<span class="avatar">${req.from[0].toUpperCase()}</span>`;
+            el.innerHTML += `<div class="friend-item">
+                <div class="friend-details">${avatar}<span>${req.from}</span></div>
+                <div class="friend-actions">
+                    <button class="success" onclick="acceptFriendRequest('${req.from}')">Accept</button>
+                    <button class="danger" onclick="declineFriendRequest('${req.from}')">Decline</button>
+                </div>
+            </div>`;
+        });
+    }
+    function renderSentRequests() {
+        const users = getUsers(), me = getCurrentUser();
+        let reqs = users[me].sentRequests||[];
+        let el = document.getElementById('sent-requests');
+        el.innerHTML = '';
+        if (!reqs.length) {document.getElementById('no-sent-requests').style.display='block'; return;}
+        document.getElementById('no-sent-requests').style.display='none';
+        reqs.forEach(req=>{
+            let fUser = users[req.to]||{};
+            let avatar = fUser.avatar?`<img src="${fUser.avatar}" class="avatar">`:`<span class="avatar">${req.to[0].toUpperCase()}</span>`;
+            el.innerHTML += `<div class="friend-item">
+                <div class="friend-details">${avatar}<span>${req.to}</span></div>
+                <div class="friend-actions">
+                    <span class="req-badge">Requested</span>
+                </div>
+            </div>`;
+        });
+    }
+    function searchFriends(e) {
+        e.preventDefault();
+        const searchTerm = document.getElementById('friend-search').value.trim().toLowerCase();
+        if (!searchTerm) {document.getElementById('search-results').innerHTML='';document.getElementById('no-search-results').style.display='block';return;}
+        const users = getUsers(), me = getCurrentUser();
+        let user = users[me];
+        let resultsHTML = '';
+        let hasResults = false;
+        Object.keys(users).forEach(username => {
+            if (
+                username !== me && 
+                !user.friends.includes(username) &&
+                !user.sentRequests.some(req => req.to === username) &&
+                !user.friendRequests.some(req => req.from === username) &&
+                username.toLowerCase().includes(searchTerm)
+            ) {
+                hasResults = true;
+                let avatar = users[username].avatar?`<img src="${users[username].avatar}" class="avatar">`:`<span class="avatar">${username[0].toUpperCase()}</span>`;
+                resultsHTML += `<div class="friend-item">
+                    <div class="friend-details">${avatar}<span>${username}</span></div>
+                    <div class="friend-actions">
+                        <button class="primary" onclick="sendFriendRequest('${username}')">Add Friend</button>
                     </div>
-                `;
-            });
-            
-            document.getElementById('friends-list').innerHTML = friendsHTML;
-            document.getElementById('no-friends').classList.add('hidden');
+                </div>`;
+            }
+        });
+        document.getElementById('search-results').innerHTML = resultsHTML;
+        document.getElementById('no-search-results').style.display = hasResults?'none':'block';
+    }
+    window.sendFriendRequest = function(toUsername) {
+        const users = getUsers(), me = getCurrentUser();
+        // Add to sender's sent requests
+        users[me].sentRequests.push({to: toUsername, date: now()});
+        // Add to recipient's friend requests
+        users[toUsername].friendRequests.push({from: me, date: now()});
+        setUsers(users);
+        renderSentRequests();
+        toast(`Friend request sent to ${toUsername}`);
+        updateNotificationBadges();
+    }
+    window.acceptFriendRequest = function(fromUsername) {
+        const users = getUsers(), me = getCurrentUser();
+        // Remove from recipient's friend requests
+        users[me].friendRequests = users[me].friendRequests.filter(req => req.from !== fromUsername);
+        // Remove from sender's sent requests
+        users[fromUsername].sentRequests = users[fromUsername].sentRequests.filter(req => req.to !== me);
+        // Add to both friends lists
+        if (!users[me].friends.includes(fromUsername)) users[me].friends.push(fromUsername);
+        if (!users[fromUsername].friends.includes(me)) users[fromUsername].friends.push(me);
+        // Initialize chat if it doesn't exist
+        if (!users[me].chats[fromUsername]) users[me].chats[fromUsername] = [];
+        if (!users[fromUsername].chats[me]) users[fromUsername].chats[me] = [];
+        setUsers(users);
+        renderFriendsList(); renderRequests();
+        toast(`You are now friends with ${fromUsername}`);
+        updateNotificationBadges();
+    }
+    window.declineFriendRequest = function(fromUsername) {
+        const users = getUsers(), me = getCurrentUser();
+        users[me].friendRequests = users[me].friendRequests.filter(req => req.from !== fromUsername);
+        users[fromUsername].sentRequests = users[fromUsername].sentRequests.filter(req => req.to !== me);
+        setUsers(users);
+        renderRequests(); renderSentRequests();
+        toast('Request declined');
+        updateNotificationBadges();
+    }
+    window.removeFriend = function(friendUsername) {
+        const users = getUsers(), me = getCurrentUser();
+        users[me].friends = users[me].friends.filter(f=>f!==friendUsername);
+        users[friendUsername].friends = users[friendUsername].friends.filter(f=>f!==me);
+        setUsers(users);
+        renderFriendsList();
+        toast('Friend removed');
+        updateNotificationBadges();
+    }
+    window.startChatWithFriend = function(friend) {
+        showScreen('chat');
+        renderChatFriends();
+        document.getElementById('chat-friend-select').value = friend;
+        renderChatWithFriend(friend);
+    }
+    // ========== Chat ==========
+    function renderChatFriends() {
+        const users = getUsers(), me = getCurrentUser();
+        let sel = document.getElementById('chat-friend-select');
+        sel.innerHTML = '<option value="">Select a friend to chat with</option>';
+        (users[me].friends||[]).forEach(f => {
+            sel.innerHTML += `<option value="${f}">${f}</option>`;
+        });
+        document.getElementById('chat-header').textContent = 'Select a friend to start chatting';
+        document.getElementById('chat-messages').innerHTML = '';
+        document.getElementById('chat-input').value = '';
+        document.getElementById('chat-input').disabled = true;
+        document.getElementById('send-message').disabled = true;
+        document.getElementById('chat-friend-select').onchange = function() {
+            let friend = this.value;
+            if (!friend) return;
+            renderChatWithFriend(friend,true);
         }
-
-        function loadFriendRequests() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
-            
-            if (!user || !user.friendRequests || user.friendRequests.length === 0) {
-                document.getElementById('received-requests').innerHTML = '';
-                document.getElementById('no-requests').classList.remove('hidden');
-                return;
-            }
-            
-            let requestsHTML = '';
-            user.friendRequests.forEach(request => {
-                requestsHTML += `
-                    <div class="friend-item">
-                        <span>${request.from}</span>
-                        <div class="friend-actions">
-                            <button class="success" onclick="acceptFriendRequest('${request.from}')">Accept</button>
-                            <button class="danger" onclick="declineFriendRequest('${request.from}')">Decline</button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('received-requests').innerHTML = requestsHTML;
-            document.getElementById('no-requests').classList.add('hidden');
+    }
+    function renderChatWithFriend(friend, preserveScroll) {
+        const users = getUsers(), me = getCurrentUser();
+        let chat = users[me].chats[friend] || [];
+        document.getElementById('chat-header').textContent = `Chat with ${friend}`;
+        let msgs = '';
+        chat.forEach((msg,i) => {
+            let seen = '';
+            if(i===chat.length-1 && msg.from===me && msg.read)
+                seen='<span class="seen-label">Seen</span>';
+            msgs += `<div class="message ${msg.from===me?'sent':'received'}">
+                <div class="message-content">${msg.text}</div>
+                <div class="message-info">${formatTime(msg.time)}${seen}</div>
+            </div>`;
+        });
+        let chatBox = document.getElementById('chat-messages');
+        chatBox.innerHTML = msgs;
+        document.getElementById('chat-input').disabled = false;
+        document.getElementById('send-message').disabled = false;
+        // Mark all received as read
+        users[me].chats[friend] = chat.map(msg => msg.from===friend ? {...msg, read:true} : msg);
+        users[me].unreadChats[friend] = 0;
+        setUsers(users);
+        updateNotificationBadges();
+        setTimeout(()=>{chatBox.scrollTop=99999;}, preserveScroll?50:0);
+    }
+    document.getElementById('send-message').onclick = sendChatMsg;
+    document.getElementById('chat-input').onkeypress = function(e){ if(e.key==='Enter')sendChatMsg(); }
+    function sendChatMsg() {
+        let friend = document.getElementById('chat-friend-select').value;
+        if (!friend) return;
+        let text = document.getElementById('chat-input').value;
+        if (!text.trim()) return;
+        let users = getUsers(), me = getCurrentUser();
+        let msg = {from:me, text, time:now(), read:false};
+        users[me].chats[friend] = users[me].chats[friend] || [];
+        users[friend].chats[me] = users[friend].chats[me] || [];
+        users[me].chats[friend].push(msg);
+        users[friend].chats[me].push(msg);
+        users[friend].unreadChats[me] = (users[friend].unreadChats[me]||0)+1;
+        setUsers(users);
+        renderChatWithFriend(friend,true);
+        document.getElementById('chat-input').value = '';
+    }
+    // ========== Profile ==========
+    function renderProfile() {
+        const users = getUsers(), me = getCurrentUser();
+        document.getElementById('profile-username').textContent = me;
+        document.getElementById('profile-avatar').src = users[me].avatar || '';
+        // Friends
+        let html = (users[me].friends||[]).map(f=>{
+            let fUser = users[f]||{};
+            let avatar = fUser.avatar?`<img src="${fUser.avatar}" class="avatar avatar-sm">`:`<span class="avatar avatar-sm">${f[0].toUpperCase()}</span>`;
+            return `<div class="friend-item">
+                <div class="friend-details">${avatar}<span>${f}</span></div>
+                <div class="friend-actions">
+                    <button class="danger" onclick="removeFriend('${f}')">Remove</button>
+                </div>
+            </div>`;
+        }).join('') || '<div style="color:#888">No friends yet.</div>';
+        document.getElementById('profile-friends').innerHTML = html;
+    }
+    document.getElementById('btn-avatar-upload').onclick = () => document.getElementById('profile-avatar-upload').click();
+    document.getElementById('profile-avatar-upload').onchange = function(e){
+        const file = e.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(ev) {
+            const users = getUsers(), me = getCurrentUser();
+            users[me].avatar = ev.target.result;
+            setUsers(users);
+            renderProfile();
+            renderFriendsList();
+            renderStories();
         }
-
-        function searchFriends(e) {
-            e.preventDefault();
-            const searchTerm = document.getElementById('friend-search').value.trim().toLowerCase();
-            
-            if (!searchTerm) {
-                document.getElementById('search-results').innerHTML = '';
-                document.getElementById('no-search-results').classList.remove('hidden');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
-            
-            let resultsHTML = '';
-            let hasResults = false;
-            
-            Object.keys(users).forEach(username => {
-                // Don't show yourself or existing friends
-                if (username !== currentUser && 
-                    !user.friends.includes(username) &&
-                    !user.sentRequests.some(req => req.to === username) &&
-                    username.toLowerCase().includes(searchTerm)) {
-                    
-                    hasResults = true;
-                    const isAlreadyRequested = user.sentRequests.some(req => req.to === username);
-                    
-                    resultsHTML += `
-                        <div class="friend-item">
-                            <span>${username}</span>
-                            <div class="friend-actions">
-                                ${isAlreadyRequested ? 
-                                    '<span>Request Sent</span>' : 
-                                    `<button class="primary" onclick="sendFriendRequest('${username}')">Add Friend</button>`
-                                }
-                            </div>
-                        </div>
-                    `;
-                }
-            });
-            
-            document.getElementById('search-results').innerHTML = resultsHTML;
-            document.getElementById('no-search-results').classList.toggle('hidden', hasResults);
+        reader.readAsDataURL(file);
+    };
+    // ========== Utility ==========
+    function updateNotificationBadges() {
+        const users = getUsers(), me = getCurrentUser();
+        if (!me) {
+            nav.snapBadge.classList.add('hidden'); nav.chatBadge.classList.add('hidden'); nav.reqBadge.classList.add('hidden');
+            return;
         }
-
-        function sendFriendRequest(toUsername) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            // Add to sender's sent requests
-            users[currentUser].sentRequests.push({
-                to: toUsername,
-                date: new Date().toISOString()
-            });
-            
-            // Add to recipient's friend requests
-            users[toUsername].friendRequests.push({
-                from: currentUser,
-                date: new Date().toISOString()
-            });
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            // Update UI
-            searchFriends({ preventDefault: () => {} });
-            updateNotificationBadges();
-            
-            alert(`Friend request sent to ${toUsername}`);
-        }
-
-        function acceptFriendRequest(fromUsername) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            // Remove from recipient's friend requests
-            users[currentUser].friendRequests = users[currentUser].friendRequests.filter(
-                req => req.from !== fromUsername
-            );
-            
-            // Remove from sender's sent requests
-            users[fromUsername].sentRequests = users[fromUsername].sentRequests.filter(
-                req => req.to !== currentUser
-            );
-            
-            // Add to both friends lists
-            if (!users[currentUser].friends.includes(fromUsername)) {
-                users[currentUser].friends.push(fromUsername);
-            }
-            
-            if (!users[fromUsername].friends.includes(currentUser)) {
-                users[fromUsername].friends.push(currentUser);
-            }
-            
-            // Initialize chat if it doesn't exist
-            if (!users[currentUser].chats[fromUsername]) {
-                users[currentUser].chats[fromUsername] = [];
-            }
-            
-            if (!users[fromUsername].chats[currentUser]) {
-                users[fromUsername].chats[currentUser] = [];
-            }
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            // Update UI
-            loadFriendRequests();
-            loadFriendsList();
-            updateNotificationBadges();
-            
-            alert(`You are now friends with ${fromUsername}`);
-        }
-
-        function declineFriendRequest(fromUsername) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            // Remove from recipient's friend requests
-            users[currentUser].friendRequests = users[currentUser].friendRequests.filter(
-                req => req.from !== fromUsername
-            );
-            
-            // Remove from sender's sent requests
-            users[fromUsername].sentRequests = users[fromUsername].sentRequests.filter(
-                req => req.to !== currentUser
-            );
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            // Update UI
-            loadFriendRequests();
-            updateNotificationBadges();
-        }
-
-        function removeFriend(friendUsername) {
-            if (!confirm(`Are you sure you want to remove ${friendUsername} as a friend?`)) {
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            // Remove from both friends lists
-            users[currentUser].friends = users[currentUser].friends.filter(
-                friend => friend !== friendUsername
-            );
-            
-            users[friendUsername].friends = users[friendUsername].friends.filter(
-                friend => friend !== currentUser
-            );
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            // Update UI
-            loadFriendsList();
-            
-            // If we're currently chatting with this friend, close the chat
-            if (currentChatFriend === friendUsername) {
-                currentChatFriend = null;
-                chatFriendSelect.value = '';
-                chatMessages.innerHTML = '';
-                chatHeader.textContent = 'Select a friend to start chatting';
-                chatInput.disabled = true;
-                sendMessageBtn.disabled = true;
-            }
-            
-            // Reload chat friends list
-            if (chatSystem.classList.contains('hidden') === false) {
-                loadChatFriends();
-            }
-        }
-
-        function startChatWithFriend(friendUsername) {
-            showChatSystem();
-            chatFriendSelect.value = friendUsername;
-            handleChatFriendSelect({ target: { value: friendUsername } });
-        }
-
-        // Chat system functions
-        function loadChatFriends() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
-            
-            chatFriendSelect.innerHTML = '<option value="">Select a friend to chat with</option>';
-            
-            if (user && user.friends && user.friends.length > 0) {
-                user.friends.forEach(friend => {
-                    const option = document.createElement('option');
-                    option.value = friend;
-                    option.textContent = friend;
-                    chatFriendSelect.appendChild(option);
-                });
-            }
-        }
-
-        function handleChatFriendSelect(e) {
-            currentChatFriend = e.target.value;
-            
-            if (currentChatFriend) {
-                loadChat(currentChatFriend);
-                chatInput.disabled = false;
-                sendMessageBtn.disabled = false;
-                chatHeader.textContent = `Chat with ${currentChatFriend}`;
-                
-                // Mark messages as read
-                const users = JSON.parse(localStorage.getItem('users'));
-                if (users[currentUser].unreadMessages[currentChatFriend]) {
-                    delete users[currentUser].unreadMessages[currentChatFriend];
-                    localStorage.setItem('users', JSON.stringify(users));
-                    updateNotificationBadges();
-                }
-            } else {
-                chatMessages.innerHTML = '';
-                chatInput.disabled = true;
-                sendMessageBtn.disabled = true;
-                chatHeader.textContent = 'Select a friend to start chatting';
-            }
-        }
-
-        function loadChat(friendUsername) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const chat = users[currentUser].chats[friendUsername] || [];
-            
-            chatMessages.innerHTML = '';
-            
-            if (chat.length === 0) {
-                chatMessages.innerHTML = '<p>No messages yet. Start the conversation!</p>';
-                return;
-            }
-            
-            chat.forEach(message => {
-                const isCurrentUser = message.sender === currentUser;
-                const messageElement = document.createElement('div');
-                messageElement.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
-                
-                messageElement.innerHTML = `
-                    <div class="message-content">${message.text}</div>
-                    <div class="message-info">
-                        ${formatChatTime(message.timestamp)}
-                        ${isCurrentUser ? '' : `• ${message.sender}`}
-                    </div>
-                `;
-                
-                chatMessages.appendChild(messageElement);
-            });
-            
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function sendMessage() {
-            const messageText = chatInput.value.trim();
-            
-            if (!messageText || !currentChatFriend) {
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            const timestamp = new Date().toISOString();
-            
-            // Add message to sender's chat
-            users[currentUser].chats[currentChatFriend].push({
-                sender: currentUser,
-                text: messageText,
-                timestamp: timestamp
-            });
-            
-            // Add message to recipient's chat
-            users[currentChatFriend].chats[currentUser].push({
-                sender: currentUser,
-                text: messageText,
-                timestamp: timestamp
-            });
-            
-            // Mark as unread if recipient isn't currently viewing the chat
-            if (!users[currentChatFriend].unreadMessages) {
-                users[currentChatFriend].unreadMessages = {};
-            }
-            
-            if (localStorage.getItem('currentUser') !== currentChatFriend) {
-                if (!users[currentChatFriend].unreadMessages[currentUser]) {
-                    users[currentChatFriend].unreadMessages[currentUser] = 0;
-                }
-                users[currentChatFriend].unreadMessages[currentUser]++;
-            }
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            // Update UI
-            chatInput.value = '';
-            loadChat(currentChatFriend);
-            
-            // Update notification badges for recipient
-            updateNotificationBadges();
-        }
-
-        function updateChat() {
-            if (currentChatFriend) {
-                loadChat(currentChatFriend);
-            }
-        }
-
-        // Notification functions
-        function updateNotificationBadges() {
-            if (!currentUser) return;
-            
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users[currentUser];
-            
-            // Friend request notifications
-            const friendRequestCount = user.friendRequests?.length || 0;
-            if (friendRequestCount > 0) {
-                friendNotificationBadge.textContent = friendRequestCount;
-                friendNotificationBadge.classList.remove('hidden');
-            } else {
-                friendNotificationBadge.classList.add('hidden');
-            }
-            
-            // Chat notifications
-            const unreadMessages = user.unreadMessages || {};
-            const totalUnread = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
-            
-            if (totalUnread > 0) {
-                chatNotificationBadge.textContent = totalUnread;
-                chatNotificationBadge.classList.remove('hidden');
-            } else {
-                chatNotificationBadge.classList.add('hidden');
-            }
-        }
-
-        // Helper functions
-        function formatChatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', init);
+        let unreadSnaps = (users[me].snaps||[]).filter(s=>!s.viewed).length;
+        if (unreadSnaps > 0) { nav.snapBadge.textContent = unreadSnaps; nav.snapBadge.classList.remove('hidden'); }
+        else nav.snapBadge.classList.add('hidden');
+        let unreadChats = Object.values(users[me].unreadChats||{}).reduce((a,b)=>a+b,0);
+        if (unreadChats > 0) { nav.chatBadge.textContent = unreadChats; nav.chatBadge.classList.remove('hidden'); }
+        else nav.chatBadge.classList.add('hidden');
+        let reqs = (users[me].friendRequests||[]).length;
+        if (reqs>0) { nav.reqBadge.textContent = reqs; nav.reqBadge.classList.remove('hidden'); }
+        else nav.reqBadge.classList.add('hidden');
+    }
+    function formatTime(time) {
+        let t = new Date(time);
+        let nowT = new Date();
+        if (t.toDateString() === nowT.toDateString())
+            return t.toTimeString().slice(0,5);
+        return t.toLocaleDateString();
+    }
+    function storyExpired(story) {
+        return (Date.now() - (new Date(story.time)).getTime()) > 24*60*60*1000;
+    }
+    // ========== App Init ==========
+    window.onload = function() {
+        if (getCurrentUser()) { showScreen('stories'); renderStories(); }
+        else showScreen('home');
+        startCamera();
+        updateNav();
+    };
     </script>
-    <script src="myscripts.js"></script>
 </body>
 </html>
