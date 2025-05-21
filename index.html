@@ -373,6 +373,43 @@
         </div>
 
         <!-- Dashboard -->
+        <!-- In your HTML, move these sections inside the dashboard div -->
+<div id="dashboard" class="hidden">
+    <div class="card">
+        <h2 id="welcome-message">Welcome back!</h2>
+        <p>You are now logged in. Use the navigation to access friends and chat features.</p>
+    </div>
+    
+    <!-- Add these inside the dashboard div -->
+    <div class="card" id="view-snaps-container">
+        <h3>Your Snaps</h3>
+        <div id="received-snaps">
+            <p id="no-snaps">You don't have any snaps yet.</p>
+        </div>
+    </div>
+
+    <div class="card" id="send-snap-container">
+        <h3>Send a Snap</h3>
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <img id="captured-image" class="hidden">
+        </div>
+        <div class="camera-controls">
+            <button id="capture-btn">Capture</button>
+            <button id="retake-btn" class="hidden">Retake</button>
+        </div>
+        <form id="send-snap-form">
+            <select id="send-to-friend" required>
+                <option value="">Select a friend</option>
+            </select>
+            <input type="text" id="snap-caption" placeholder="Add a caption...">
+            <button type="submit" id="send-snap-btn" class="hidden" disabled>Send Snap</button>
+        </form>
+        <div id="send-snap-error" class="error hidden"></div>
+        <div id="send-snap-success" class="success hidden"></div>
+    </div>
+</div>
         <!-- Add this to your dashboard -->
 <div class="card" id="view-snaps-container">
     <h3>Your Snaps</h3>
