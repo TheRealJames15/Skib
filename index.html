@@ -767,24 +767,26 @@
         renderChatWithFriend(friend);
     }
     // ========== Chat ==========
-    function renderChatFriends() {
-        const users = getUsers(), me = getCurrentUser();
-        let sel = document.getElementById('chat-friend-select');
-        sel.innerHTML = '<option value="">Select a friend to chat with</option>';
-        (users[me].friends||[]).forEach(f => {
-            sel.innerHTML += `<option value="${f}">${f}</option>`;
-        });
-        document.getElementById('chat-header').textContent = 'Select a friend to start chatting';
-        document.getElementById('chat-messages').innerHTML = '';
-        document.getElementById('chat-input').value = '';
-        document.getElementById('chat-input').disabled = true;
-        document.getElementById('send-message').disabled = true;
-        document.getElementById('chat-friend-select').onchange = function() {
-            let friend = this.value;
-            if (!friend) return;
-            renderChatWithFriend(friend,true);
-        }
+ function renderChatFriends() {
+    const users = getUsers(), me = getCurrentUser();
+    let sel = document.getElementById('chat-friend-select');
+    sel.innerHTML = '<option value="">Select a friend to chat with</option>';
+    (users[me].friends||[]).forEach(f => {
+        // Get unread count for this friend
+        let unread = users[me].unreadChats && users[me].unreadChats[f] ? users[me].unreadChats[f] : 0;
+        sel.innerHTML += `<option value="${f}">${f}${unread > 0 ? ' ('+unread+')' : ''}</option>`;
+    });
+    document.getElementById('chat-header').textContent = 'Select a friend to start chatting';
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('chat-input').value = '';
+    document.getElementById('chat-input').disabled = true;
+    document.getElementById('send-message').disabled = true;
+    document.getElementById('chat-friend-select').onchange = function() {
+        let friend = this.value;
+        if (!friend) return;
+        renderChatWithFriend(friend,true);
     }
+}
     function renderChatWithFriend(friend, preserveScroll) {
         const users = getUsers(), me = getCurrentUser();
         let chat = users[me].chats[friend] || [];
